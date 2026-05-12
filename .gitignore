@@ -57,6 +57,9 @@ build/
 # Mocks (generated)
 **/*.mocks.dart
 
+# Generated l10n
+lib/core/l10n/generated/
+
 # Coverage
 coverage/
 
