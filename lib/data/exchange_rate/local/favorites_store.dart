@@ -12,7 +12,7 @@ class FavoritesStore {
   Future<List<String>> read() async {
     final raw = _prefs.getString(_key);
     if (raw == null) {
-      final seed = AppDefaults.defaultFavorites;
+      const seed = AppDefaults.defaultFavorites;
       await _prefs.setString(_key, json.encode(seed));
       return List.of(seed);
     }

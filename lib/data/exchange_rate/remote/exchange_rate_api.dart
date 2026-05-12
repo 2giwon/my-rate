@@ -4,9 +4,7 @@ import '../../../core/errors/app_exception.dart';
 import 'dtos.dart';
 
 class ExchangeRateApi {
-  ExchangeRateApi({required Dio dio, required String apiKey})
-    : _dio = dio,
-      _apiKey = apiKey;
+  ExchangeRateApi({required Dio dio, required String apiKey}) : _dio = dio, _apiKey = apiKey;
 
   final Dio _dio;
   final String _apiKey;
@@ -15,9 +13,7 @@ class ExchangeRateApi {
 
   Future<LatestRatesDto> fetchLatest(String baseCode) async {
     try {
-      final response = await _dio.get<Map<String, dynamic>>(
-        '$_baseUrl/$_apiKey/latest/$baseCode',
-      );
+      final response = await _dio.get<Map<String, dynamic>>('$_baseUrl/$_apiKey/latest/$baseCode');
 
       final status = response.statusCode ?? 0;
       if (status < 200 || status >= 300) {

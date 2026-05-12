@@ -10,8 +10,7 @@ class SettingsStore {
   static const String _kLang = 'settings.language';
   static const String _kTheme = 'settings.themeMode';
 
-  Future<String> defaultFrom() async =>
-      _prefs.getString(_kFrom) ?? AppDefaults.defaultFromCurrency;
+  Future<String> defaultFrom() async => _prefs.getString(_kFrom) ?? AppDefaults.defaultFromCurrency;
   Future<void> setDefaultFrom(String code) => _prefs.setString(_kFrom, code);
 
   Future<String> defaultTo() async => _prefs.getString(_kTo) ?? AppDefaults.defaultToCurrency;

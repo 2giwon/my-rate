@@ -57,10 +57,7 @@ class ExchangeRateRepositoryImpl implements ExchangeRateRepository {
       baseCode: dto.baseCode,
       rates: Map.unmodifiable(dto.conversionRates),
       fetchedAt: fetchedAt,
-      apiUpdatedAt: DateTime.fromMillisecondsSinceEpoch(
-        dto.timeLastUpdateUnix * 1000,
-        isUtc: true,
-      ),
+      apiUpdatedAt: DateTime.fromMillisecondsSinceEpoch(dto.timeLastUpdateUnix * 1000, isUtc: true),
       apiNextUpdateAt: DateTime.fromMillisecondsSinceEpoch(
         dto.timeNextUpdateUnix * 1000,
         isUtc: true,

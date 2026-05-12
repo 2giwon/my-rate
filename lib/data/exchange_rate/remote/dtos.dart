@@ -19,8 +19,9 @@ class LatestRatesDto {
   final Map<String, double> conversionRates;
 
   factory LatestRatesDto.fromJson(Map<String, dynamic> json) {
-    final rates = (json['conversion_rates'] as Map<String, dynamic>)
-        .map((k, v) => MapEntry(k, (v as num).toDouble()));
+    final rates = (json['conversion_rates'] as Map<String, dynamic>).map(
+      (k, v) => MapEntry(k, (v as num).toDouble()),
+    );
     return LatestRatesDto(
       result: json['result'] as String,
       baseCode: json['base_code'] as String,
