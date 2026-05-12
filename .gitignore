@@ -43,3 +43,22 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Environment files
+.env
+.env.local
+
+# Build / dev runner
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Mocks (generated)
+**/*.mocks.dart
+
+# Coverage
+coverage/
+
+# macOS
+.DS_Store
