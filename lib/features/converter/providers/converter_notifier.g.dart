@@ -11,7 +11,10 @@ String _$converterNotifierHash() => r'2a0e6b42b7f95be84628860c8c2cc9e2fbf6b845';
 /// See also [ConverterNotifier].
 @ProviderFor(ConverterNotifier)
 final converterNotifierProvider =
-    AutoDisposeAsyncNotifierProvider<ConverterNotifier, ConverterState>.internal(
+    AutoDisposeAsyncNotifierProvider<
+      ConverterNotifier,
+      ConverterState
+    >.internal(
       ConverterNotifier.new,
       name: r'converterNotifierProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')

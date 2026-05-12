@@ -47,7 +47,9 @@ String _$dioHash() => r'1a612b72c173f426641bc9180e514895bed67a36';
 final dioProvider = Provider<Dio>.internal(
   dio,
   name: r'dioProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product') ? null : _$dioHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$dioHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -72,19 +74,21 @@ final exchangeRateApiProvider = Provider<ExchangeRateApi>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef ExchangeRateApiRef = ProviderRef<ExchangeRateApi>;
-String _$exchangeRateRepositoryHash() => r'696bb0971a34e4677d3c21ec6113ac3ca89e6046';
+String _$exchangeRateRepositoryHash() =>
+    r'696bb0971a34e4677d3c21ec6113ac3ca89e6046';
 
 /// See also [exchangeRateRepository].
 @ProviderFor(exchangeRateRepository)
-final exchangeRateRepositoryProvider = FutureProvider<ExchangeRateRepository>.internal(
-  exchangeRateRepository,
-  name: r'exchangeRateRepositoryProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$exchangeRateRepositoryHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final exchangeRateRepositoryProvider =
+    FutureProvider<ExchangeRateRepository>.internal(
+      exchangeRateRepository,
+      name: r'exchangeRateRepositoryProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$exchangeRateRepositoryHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element

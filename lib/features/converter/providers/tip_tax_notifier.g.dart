@@ -10,15 +10,16 @@ String _$tipTaxNotifierHash() => r'aaa42f86ba44affd795a4e632e169c961cd5aa5d';
 
 /// See also [TipTaxNotifier].
 @ProviderFor(TipTaxNotifier)
-final tipTaxNotifierProvider = AutoDisposeNotifierProvider<TipTaxNotifier, TipTaxState>.internal(
-  TipTaxNotifier.new,
-  name: r'tipTaxNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$tipTaxNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final tipTaxNotifierProvider =
+    AutoDisposeNotifierProvider<TipTaxNotifier, TipTaxState>.internal(
+      TipTaxNotifier.new,
+      name: r'tipTaxNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$tipTaxNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$TipTaxNotifier = AutoDisposeNotifier<TipTaxState>;
 // ignore_for_file: type=lint
