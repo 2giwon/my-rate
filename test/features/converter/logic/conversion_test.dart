@@ -5,12 +5,7 @@ import 'package:myrate/features/converter/logic/conversion.dart';
 void main() {
   final snap = ExchangeRateSnapshot(
     baseCode: 'USD',
-    rates: const {
-      'USD': 1.0,
-      'KRW': 1362.5,
-      'JPY': 156.2,
-      'EUR': 0.92,
-    },
+    rates: const {'USD': 1.0, 'KRW': 1362.5, 'JPY': 156.2, 'EUR': 0.92},
     fetchedAt: DateTime(2026, 5, 12),
     apiUpdatedAt: DateTime(2026, 5, 12),
     apiNextUpdateAt: DateTime(2026, 5, 13),
@@ -37,7 +32,7 @@ void main() {
 
     test('cross rate JPY to EUR via USD base', () {
       final r = convert(snap: snap, fromCode: 'JPY', toCode: 'EUR', amount: 100);
-      final expected = 100 * (1 / 156.2) * 0.92;
+      const expected = 100 * (1 / 156.2) * 0.92;
       expect(r.convertedAmount, closeTo(expected, 1e-9));
     });
 
