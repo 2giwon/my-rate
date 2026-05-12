@@ -76,10 +76,6 @@ class DiscountState with _$DiscountState {
     required double finalAmount,
   }) = _DiscountState;
 
-  factory DiscountState.initial() => const DiscountState(
-        byPercent: true,
-        percentOrAmount: 0,
-        discountAmount: 0,
-        finalAmount: 0,
-      );
+  factory DiscountState.initial() =>
+      const DiscountState(byPercent: true, percentOrAmount: 0, discountAmount: 0, finalAmount: 0);
 }

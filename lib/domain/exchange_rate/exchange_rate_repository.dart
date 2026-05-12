@@ -6,10 +6,7 @@ abstract class ExchangeRateRepository {
   /// - 만료/없으면 API 호출, 결과 캐시 저장 후 반환
   /// - 네트워크 실패 + 캐시 있으면 `isStale=true`로 캐시 반환
   /// - 네트워크 실패 + 캐시 없으면 NetworkException(hasCache: false) throw
-  Future<ExchangeRateSnapshot> getLatest({
-    required String baseCode,
-    bool forceRefresh = false,
-  });
+  Future<ExchangeRateSnapshot> getLatest({required String baseCode, bool forceRefresh = false});
 
   /// 사용 가능한 모든 통화 목록 (로컬 catalog 기반)
   Future<List<Currency>> getAllCurrencies();

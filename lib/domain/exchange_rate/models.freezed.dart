@@ -25,8 +25,7 @@ mixin _$Currency {
   /// Create a copy of Currency
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $CurrencyCopyWith<Currency> get copyWith =>
-      throw _privateConstructorUsedError;
+  $CurrencyCopyWith<Currency> get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -38,8 +37,7 @@ abstract class $CurrencyCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$CurrencyCopyWithImpl<$Res, $Val extends Currency>
-    implements $CurrencyCopyWith<$Res> {
+class _$CurrencyCopyWithImpl<$Res, $Val extends Currency> implements $CurrencyCopyWith<$Res> {
   _$CurrencyCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
@@ -82,25 +80,19 @@ class _$CurrencyCopyWithImpl<$Res, $Val extends Currency>
 }
 
 /// @nodoc
-abstract class _$$CurrencyImplCopyWith<$Res>
-    implements $CurrencyCopyWith<$Res> {
-  factory _$$CurrencyImplCopyWith(
-    _$CurrencyImpl value,
-    $Res Function(_$CurrencyImpl) then,
-  ) = __$$CurrencyImplCopyWithImpl<$Res>;
+abstract class _$$CurrencyImplCopyWith<$Res> implements $CurrencyCopyWith<$Res> {
+  factory _$$CurrencyImplCopyWith(_$CurrencyImpl value, $Res Function(_$CurrencyImpl) then) =
+      __$$CurrencyImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String code, String name, String? flagEmoji, int decimalPlaces});
 }
 
 /// @nodoc
-class __$$CurrencyImplCopyWithImpl<$Res>
-    extends _$CurrencyCopyWithImpl<$Res, _$CurrencyImpl>
+class __$$CurrencyImplCopyWithImpl<$Res> extends _$CurrencyCopyWithImpl<$Res, _$CurrencyImpl>
     implements _$$CurrencyImplCopyWith<$Res> {
-  __$$CurrencyImplCopyWithImpl(
-    _$CurrencyImpl _value,
-    $Res Function(_$CurrencyImpl) _then,
-  ) : super(_value, _then);
+  __$$CurrencyImplCopyWithImpl(_$CurrencyImpl _value, $Res Function(_$CurrencyImpl) _then)
+    : super(_value, _then);
 
   /// Create a copy of Currency
   /// with the given fields replaced by the non-null parameter values.
@@ -166,15 +158,13 @@ class _$CurrencyImpl implements _Currency {
             other is _$CurrencyImpl &&
             (identical(other.code, code) || other.code == code) &&
             (identical(other.name, name) || other.name == name) &&
-            (identical(other.flagEmoji, flagEmoji) ||
-                other.flagEmoji == flagEmoji) &&
+            (identical(other.flagEmoji, flagEmoji) || other.flagEmoji == flagEmoji) &&
             (identical(other.decimalPlaces, decimalPlaces) ||
                 other.decimalPlaces == decimalPlaces));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, code, name, flagEmoji, decimalPlaces);
+  int get hashCode => Object.hash(runtimeType, code, name, flagEmoji, decimalPlaces);
 
   /// Create a copy of Currency
   /// with the given fields replaced by the non-null parameter values.
@@ -206,8 +196,7 @@ abstract class _Currency implements Currency {
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$CurrencyImplCopyWith<_$CurrencyImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  _$$CurrencyImplCopyWith<_$CurrencyImpl> get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -242,10 +231,7 @@ abstract class $ExchangeRateSnapshotCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$ExchangeRateSnapshotCopyWithImpl<
-  $Res,
-  $Val extends ExchangeRateSnapshot
->
+class _$ExchangeRateSnapshotCopyWithImpl<$Res, $Val extends ExchangeRateSnapshot>
     implements $ExchangeRateSnapshotCopyWith<$Res> {
   _$ExchangeRateSnapshotCopyWithImpl(this._value, this._then);
 
@@ -397,13 +383,10 @@ class _$ExchangeRateSnapshotImpl extends _ExchangeRateSnapshot {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ExchangeRateSnapshotImpl &&
-            (identical(other.baseCode, baseCode) ||
-                other.baseCode == baseCode) &&
+            (identical(other.baseCode, baseCode) || other.baseCode == baseCode) &&
             const DeepCollectionEquality().equals(other._rates, _rates) &&
-            (identical(other.fetchedAt, fetchedAt) ||
-                other.fetchedAt == fetchedAt) &&
-            (identical(other.apiUpdatedAt, apiUpdatedAt) ||
-                other.apiUpdatedAt == apiUpdatedAt) &&
+            (identical(other.fetchedAt, fetchedAt) || other.fetchedAt == fetchedAt) &&
+            (identical(other.apiUpdatedAt, apiUpdatedAt) || other.apiUpdatedAt == apiUpdatedAt) &&
             (identical(other.apiNextUpdateAt, apiNextUpdateAt) ||
                 other.apiNextUpdateAt == apiNextUpdateAt));
   }
@@ -423,12 +406,8 @@ class _$ExchangeRateSnapshotImpl extends _ExchangeRateSnapshot {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$ExchangeRateSnapshotImplCopyWith<_$ExchangeRateSnapshotImpl>
-  get copyWith =>
-      __$$ExchangeRateSnapshotImplCopyWithImpl<_$ExchangeRateSnapshotImpl>(
-        this,
-        _$identity,
-      );
+  _$$ExchangeRateSnapshotImplCopyWith<_$ExchangeRateSnapshotImpl> get copyWith =>
+      __$$ExchangeRateSnapshotImplCopyWithImpl<_$ExchangeRateSnapshotImpl>(this, _$identity);
 }
 
 abstract class _ExchangeRateSnapshot extends ExchangeRateSnapshot {
@@ -456,8 +435,8 @@ abstract class _ExchangeRateSnapshot extends ExchangeRateSnapshot {
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ExchangeRateSnapshotImplCopyWith<_$ExchangeRateSnapshotImpl>
-  get copyWith => throw _privateConstructorUsedError;
+  _$$ExchangeRateSnapshotImplCopyWith<_$ExchangeRateSnapshotImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -472,16 +451,13 @@ mixin _$ConversionResult {
   /// Create a copy of ConversionResult
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $ConversionResultCopyWith<ConversionResult> get copyWith =>
-      throw _privateConstructorUsedError;
+  $ConversionResultCopyWith<ConversionResult> get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $ConversionResultCopyWith<$Res> {
-  factory $ConversionResultCopyWith(
-    ConversionResult value,
-    $Res Function(ConversionResult) then,
-  ) = _$ConversionResultCopyWithImpl<$Res, ConversionResult>;
+  factory $ConversionResultCopyWith(ConversionResult value, $Res Function(ConversionResult) then) =
+      _$ConversionResultCopyWithImpl<$Res, ConversionResult>;
   @useResult
   $Res call({
     String fromCode,
@@ -548,8 +524,7 @@ class _$ConversionResultCopyWithImpl<$Res, $Val extends ConversionResult>
 }
 
 /// @nodoc
-abstract class _$$ConversionResultImplCopyWith<$Res>
-    implements $ConversionResultCopyWith<$Res> {
+abstract class _$$ConversionResultImplCopyWith<$Res> implements $ConversionResultCopyWith<$Res> {
   factory _$$ConversionResultImplCopyWith(
     _$ConversionResultImpl value,
     $Res Function(_$ConversionResultImpl) then,
@@ -653,27 +628,18 @@ class _$ConversionResultImpl implements _ConversionResult {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ConversionResultImpl &&
-            (identical(other.fromCode, fromCode) ||
-                other.fromCode == fromCode) &&
+            (identical(other.fromCode, fromCode) || other.fromCode == fromCode) &&
             (identical(other.toCode, toCode) || other.toCode == toCode) &&
             (identical(other.amount, amount) || other.amount == amount) &&
             (identical(other.convertedAmount, convertedAmount) ||
                 other.convertedAmount == convertedAmount) &&
-            (identical(other.directRate, directRate) ||
-                other.directRate == directRate) &&
+            (identical(other.directRate, directRate) || other.directRate == directRate) &&
             (identical(other.basedOn, basedOn) || other.basedOn == basedOn));
   }
 
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    fromCode,
-    toCode,
-    amount,
-    convertedAmount,
-    directRate,
-    basedOn,
-  );
+  int get hashCode =>
+      Object.hash(runtimeType, fromCode, toCode, amount, convertedAmount, directRate, basedOn);
 
   /// Create a copy of ConversionResult
   /// with the given fields replaced by the non-null parameter values.
@@ -681,10 +647,7 @@ class _$ConversionResultImpl implements _ConversionResult {
   @override
   @pragma('vm:prefer-inline')
   _$$ConversionResultImplCopyWith<_$ConversionResultImpl> get copyWith =>
-      __$$ConversionResultImplCopyWithImpl<_$ConversionResultImpl>(
-        this,
-        _$identity,
-      );
+      __$$ConversionResultImplCopyWithImpl<_$ConversionResultImpl>(this, _$identity);
 }
 
 abstract class _ConversionResult implements ConversionResult {
@@ -727,8 +690,7 @@ mixin _$TipState {
   /// Create a copy of TipState
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $TipStateCopyWith<TipState> get copyWith =>
-      throw _privateConstructorUsedError;
+  $TipStateCopyWith<TipState> get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -740,8 +702,7 @@ abstract class $TipStateCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$TipStateCopyWithImpl<$Res, $Val extends TipState>
-    implements $TipStateCopyWith<$Res> {
+class _$TipStateCopyWithImpl<$Res, $Val extends TipState> implements $TipStateCopyWith<$Res> {
   _$TipStateCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
@@ -753,11 +714,7 @@ class _$TipStateCopyWithImpl<$Res, $Val extends TipState>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? percent = null,
-    Object? tipAmount = null,
-    Object? total = null,
-  }) {
+  $Res call({Object? percent = null, Object? tipAmount = null, Object? total = null}) {
     return _then(
       _value.copyWith(
             percent: null == percent
@@ -779,35 +736,25 @@ class _$TipStateCopyWithImpl<$Res, $Val extends TipState>
 }
 
 /// @nodoc
-abstract class _$$TipStateImplCopyWith<$Res>
-    implements $TipStateCopyWith<$Res> {
-  factory _$$TipStateImplCopyWith(
-    _$TipStateImpl value,
-    $Res Function(_$TipStateImpl) then,
-  ) = __$$TipStateImplCopyWithImpl<$Res>;
+abstract class _$$TipStateImplCopyWith<$Res> implements $TipStateCopyWith<$Res> {
+  factory _$$TipStateImplCopyWith(_$TipStateImpl value, $Res Function(_$TipStateImpl) then) =
+      __$$TipStateImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({double percent, double tipAmount, double total});
 }
 
 /// @nodoc
-class __$$TipStateImplCopyWithImpl<$Res>
-    extends _$TipStateCopyWithImpl<$Res, _$TipStateImpl>
+class __$$TipStateImplCopyWithImpl<$Res> extends _$TipStateCopyWithImpl<$Res, _$TipStateImpl>
     implements _$$TipStateImplCopyWith<$Res> {
-  __$$TipStateImplCopyWithImpl(
-    _$TipStateImpl _value,
-    $Res Function(_$TipStateImpl) _then,
-  ) : super(_value, _then);
+  __$$TipStateImplCopyWithImpl(_$TipStateImpl _value, $Res Function(_$TipStateImpl) _then)
+    : super(_value, _then);
 
   /// Create a copy of TipState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? percent = null,
-    Object? tipAmount = null,
-    Object? total = null,
-  }) {
+  $Res call({Object? percent = null, Object? tipAmount = null, Object? total = null}) {
     return _then(
       _$TipStateImpl(
         percent: null == percent
@@ -830,11 +777,7 @@ class __$$TipStateImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$TipStateImpl implements _TipState {
-  const _$TipStateImpl({
-    required this.percent,
-    required this.tipAmount,
-    required this.total,
-  });
+  const _$TipStateImpl({required this.percent, required this.tipAmount, required this.total});
 
   @override
   final double percent;
@@ -854,8 +797,7 @@ class _$TipStateImpl implements _TipState {
         (other.runtimeType == runtimeType &&
             other is _$TipStateImpl &&
             (identical(other.percent, percent) || other.percent == percent) &&
-            (identical(other.tipAmount, tipAmount) ||
-                other.tipAmount == tipAmount) &&
+            (identical(other.tipAmount, tipAmount) || other.tipAmount == tipAmount) &&
             (identical(other.total, total) || other.total == total));
   }
 
@@ -889,8 +831,7 @@ abstract class _TipState implements TipState {
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$TipStateImplCopyWith<_$TipStateImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  _$$TipStateImplCopyWith<_$TipStateImpl> get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -903,8 +844,7 @@ mixin _$TaxState {
   /// Create a copy of TaxState
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $TaxStateCopyWith<TaxState> get copyWith =>
-      throw _privateConstructorUsedError;
+  $TaxStateCopyWith<TaxState> get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -912,17 +852,11 @@ abstract class $TaxStateCopyWith<$Res> {
   factory $TaxStateCopyWith(TaxState value, $Res Function(TaxState) then) =
       _$TaxStateCopyWithImpl<$Res, TaxState>;
   @useResult
-  $Res call({
-    double vatPercent,
-    bool isInclusive,
-    double taxAmount,
-    double total,
-  });
+  $Res call({double vatPercent, bool isInclusive, double taxAmount, double total});
 }
 
 /// @nodoc
-class _$TaxStateCopyWithImpl<$Res, $Val extends TaxState>
-    implements $TaxStateCopyWith<$Res> {
+class _$TaxStateCopyWithImpl<$Res, $Val extends TaxState> implements $TaxStateCopyWith<$Res> {
   _$TaxStateCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
@@ -965,30 +899,19 @@ class _$TaxStateCopyWithImpl<$Res, $Val extends TaxState>
 }
 
 /// @nodoc
-abstract class _$$TaxStateImplCopyWith<$Res>
-    implements $TaxStateCopyWith<$Res> {
-  factory _$$TaxStateImplCopyWith(
-    _$TaxStateImpl value,
-    $Res Function(_$TaxStateImpl) then,
-  ) = __$$TaxStateImplCopyWithImpl<$Res>;
+abstract class _$$TaxStateImplCopyWith<$Res> implements $TaxStateCopyWith<$Res> {
+  factory _$$TaxStateImplCopyWith(_$TaxStateImpl value, $Res Function(_$TaxStateImpl) then) =
+      __$$TaxStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    double vatPercent,
-    bool isInclusive,
-    double taxAmount,
-    double total,
-  });
+  $Res call({double vatPercent, bool isInclusive, double taxAmount, double total});
 }
 
 /// @nodoc
-class __$$TaxStateImplCopyWithImpl<$Res>
-    extends _$TaxStateCopyWithImpl<$Res, _$TaxStateImpl>
+class __$$TaxStateImplCopyWithImpl<$Res> extends _$TaxStateCopyWithImpl<$Res, _$TaxStateImpl>
     implements _$$TaxStateImplCopyWith<$Res> {
-  __$$TaxStateImplCopyWithImpl(
-    _$TaxStateImpl _value,
-    $Res Function(_$TaxStateImpl) _then,
-  ) : super(_value, _then);
+  __$$TaxStateImplCopyWithImpl(_$TaxStateImpl _value, $Res Function(_$TaxStateImpl) _then)
+    : super(_value, _then);
 
   /// Create a copy of TaxState
   /// with the given fields replaced by the non-null parameter values.
@@ -1052,18 +975,14 @@ class _$TaxStateImpl implements _TaxState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$TaxStateImpl &&
-            (identical(other.vatPercent, vatPercent) ||
-                other.vatPercent == vatPercent) &&
-            (identical(other.isInclusive, isInclusive) ||
-                other.isInclusive == isInclusive) &&
-            (identical(other.taxAmount, taxAmount) ||
-                other.taxAmount == taxAmount) &&
+            (identical(other.vatPercent, vatPercent) || other.vatPercent == vatPercent) &&
+            (identical(other.isInclusive, isInclusive) || other.isInclusive == isInclusive) &&
+            (identical(other.taxAmount, taxAmount) || other.taxAmount == taxAmount) &&
             (identical(other.total, total) || other.total == total));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, vatPercent, isInclusive, taxAmount, total);
+  int get hashCode => Object.hash(runtimeType, vatPercent, isInclusive, taxAmount, total);
 
   /// Create a copy of TaxState
   /// with the given fields replaced by the non-null parameter values.
@@ -1095,8 +1014,7 @@ abstract class _TaxState implements TaxState {
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$TaxStateImplCopyWith<_$TaxStateImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  _$$TaxStateImplCopyWith<_$TaxStateImpl> get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
@@ -1109,23 +1027,15 @@ mixin _$DiscountState {
   /// Create a copy of DiscountState
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $DiscountStateCopyWith<DiscountState> get copyWith =>
-      throw _privateConstructorUsedError;
+  $DiscountStateCopyWith<DiscountState> get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $DiscountStateCopyWith<$Res> {
-  factory $DiscountStateCopyWith(
-    DiscountState value,
-    $Res Function(DiscountState) then,
-  ) = _$DiscountStateCopyWithImpl<$Res, DiscountState>;
+  factory $DiscountStateCopyWith(DiscountState value, $Res Function(DiscountState) then) =
+      _$DiscountStateCopyWithImpl<$Res, DiscountState>;
   @useResult
-  $Res call({
-    bool byPercent,
-    double percentOrAmount,
-    double discountAmount,
-    double finalAmount,
-  });
+  $Res call({bool byPercent, double percentOrAmount, double discountAmount, double finalAmount});
 }
 
 /// @nodoc
@@ -1173,20 +1083,14 @@ class _$DiscountStateCopyWithImpl<$Res, $Val extends DiscountState>
 }
 
 /// @nodoc
-abstract class _$$DiscountStateImplCopyWith<$Res>
-    implements $DiscountStateCopyWith<$Res> {
+abstract class _$$DiscountStateImplCopyWith<$Res> implements $DiscountStateCopyWith<$Res> {
   factory _$$DiscountStateImplCopyWith(
     _$DiscountStateImpl value,
     $Res Function(_$DiscountStateImpl) then,
   ) = __$$DiscountStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    bool byPercent,
-    double percentOrAmount,
-    double discountAmount,
-    double finalAmount,
-  });
+  $Res call({bool byPercent, double percentOrAmount, double discountAmount, double finalAmount});
 }
 
 /// @nodoc
@@ -1260,24 +1164,17 @@ class _$DiscountStateImpl implements _DiscountState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$DiscountStateImpl &&
-            (identical(other.byPercent, byPercent) ||
-                other.byPercent == byPercent) &&
+            (identical(other.byPercent, byPercent) || other.byPercent == byPercent) &&
             (identical(other.percentOrAmount, percentOrAmount) ||
                 other.percentOrAmount == percentOrAmount) &&
             (identical(other.discountAmount, discountAmount) ||
                 other.discountAmount == discountAmount) &&
-            (identical(other.finalAmount, finalAmount) ||
-                other.finalAmount == finalAmount));
+            (identical(other.finalAmount, finalAmount) || other.finalAmount == finalAmount));
   }
 
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    byPercent,
-    percentOrAmount,
-    discountAmount,
-    finalAmount,
-  );
+  int get hashCode =>
+      Object.hash(runtimeType, byPercent, percentOrAmount, discountAmount, finalAmount);
 
   /// Create a copy of DiscountState
   /// with the given fields replaced by the non-null parameter values.
