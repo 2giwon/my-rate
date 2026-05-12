@@ -1,4 +1,3 @@
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:myrate/data/exchange_rate/currency_catalog.dart';
@@ -15,21 +14,22 @@ void main() {
 
   setUp(() {
     repo = _MockRepo();
-    when(() => repo.getFavoriteCodes())
-        .thenAnswer((_) async => ['KRW', 'USD']);
+    when(() => repo.getFavoriteCodes()).thenAnswer((_) async => ['KRW', 'USD']);
     when(() => repo.addFavorite(any())).thenAnswer((_) async {});
     when(() => repo.removeFavorite(any())).thenAnswer((_) async {});
   });
 
   ProviderContainer make({CurrencyCatalog? catalog}) {
-    return ProviderContainer(overrides: [
-      currencyCatalogProvider.overrideWith((_) async {
-        final c = catalog ?? CurrencyCatalog();
-        await c.load();
-        return c;
-      }),
-      exchangeRateRepositoryProvider.overrideWith((_) async => repo),
-    ]);
+    return ProviderContainer(
+      overrides: [
+        currencyCatalogProvider.overrideWith((_) async {
+          final c = catalog ?? CurrencyCatalog();
+          await c.load();
+          return c;
+        }),
+        exchangeRateRepositoryProvider.overrideWith((_) async => repo),
+      ],
+    );
   }
 
   test('build returns sorted all, favorites, popular', () async {
@@ -51,10 +51,12 @@ void main() {
   test('search filters by code or name', () async {
     final c = make();
     addTearDown(c.dispose);
-    final notifier = c.read(currencyPickerNotifierProvider(
-      availableCodes: const ['USD', 'KRW', 'JPY', 'EUR'],
-      languageCode: 'ko',
-    ).notifier);
+    final notifier = c.read(
+      currencyPickerNotifierProvider(
+        availableCodes: const ['USD', 'KRW', 'JPY', 'EUR'],
+        languageCode: 'ko',
+      ).notifier,
+    );
     await c.read(
       currencyPickerNotifierProvider(
         availableCodes: const ['USD', 'KRW', 'JPY', 'EUR'],
@@ -63,10 +65,14 @@ void main() {
     );
 
     notifier.search('유로');
-    final state = c.read(currencyPickerNotifierProvider(
-      availableCodes: const ['USD', 'KRW', 'JPY', 'EUR'],
-      languageCode: 'ko',
-    )).valueOrNull!;
+    final state = c
+        .read(
+          currencyPickerNotifierProvider(
+            availableCodes: const ['USD', 'KRW', 'JPY', 'EUR'],
+            languageCode: 'ko',
+          ),
+        )
+        .valueOrNull!;
     expect(state.searched.first.code, 'EUR');
   });
 
@@ -79,8 +85,7 @@ void main() {
     );
     await c.read(family.future);
 
-    when(() => repo.getFavoriteCodes())
-        .thenAnswer((_) async => ['KRW', 'USD', 'EUR']);
+    when(() => repo.getFavoriteCodes()).thenAnswer((_) async => ['KRW', 'USD', 'EUR']);
     await c.read(family.notifier).toggleFavorite('EUR');
     verify(() => repo.addFavorite('EUR')).called(1);
     expect(c.read(family).valueOrNull!.favorites, contains('EUR'));

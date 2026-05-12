@@ -26,10 +26,12 @@ Future<CurrencyCatalog> currencyCatalog(CurrencyCatalogRef ref) async {
 
 @Riverpod(keepAlive: true)
 Dio dio(DioRef ref) {
-  return Dio(BaseOptions(
-    connectTimeout: const Duration(seconds: 8),
-    receiveTimeout: const Duration(seconds: 8),
-  ));
+  return Dio(
+    BaseOptions(
+      connectTimeout: const Duration(seconds: 8),
+      receiveTimeout: const Duration(seconds: 8),
+    ),
+  );
 }
 
 const String _kApiKeyDefine = 'EXCHANGE_RATE_API_KEY';
@@ -41,8 +43,7 @@ ExchangeRateApi exchangeRateApi(ExchangeRateApiRef ref) {
 }
 
 @Riverpod(keepAlive: true)
-Future<ExchangeRateRepository> exchangeRateRepository(
-    ExchangeRateRepositoryRef ref) async {
+Future<ExchangeRateRepository> exchangeRateRepository(ExchangeRateRepositoryRef ref) async {
   final prefs = await ref.watch(sharedPreferencesProvider.future);
   final catalog = await ref.watch(currencyCatalogProvider.future);
   return ExchangeRateRepositoryImpl(

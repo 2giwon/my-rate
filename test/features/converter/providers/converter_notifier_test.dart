@@ -18,18 +18,20 @@ void main() {
   setUpAll(() {});
 
   ExchangeRateSnapshot _snap({String base = 'KRW'}) => ExchangeRateSnapshot(
-        baseCode: base,
-        rates: const {'KRW': 1.0, 'USD': 1 / 1362.5, 'JPY': 156.2 / 1362.5},
-        fetchedAt: DateTime.utc(2026, 5, 12),
-        apiUpdatedAt: DateTime.utc(2026, 5, 12),
-        apiNextUpdateAt: DateTime.utc(2026, 5, 13),
-      );
+    baseCode: base,
+    rates: const {'KRW': 1.0, 'USD': 1 / 1362.5, 'JPY': 156.2 / 1362.5},
+    fetchedAt: DateTime.utc(2026, 5, 12),
+    apiUpdatedAt: DateTime.utc(2026, 5, 12),
+    apiNextUpdateAt: DateTime.utc(2026, 5, 13),
+  );
 
   ProviderContainer makeContainer() {
-    return ProviderContainer(overrides: [
-      exchangeRateRepositoryProvider.overrideWith((_) async => repo),
-      settingsStoreProvider.overrideWith((_) async => settings),
-    ]);
+    return ProviderContainer(
+      overrides: [
+        exchangeRateRepositoryProvider.overrideWith((_) async => repo),
+        settingsStoreProvider.overrideWith((_) async => settings),
+      ],
+    );
   }
 
   setUp(() {
@@ -37,10 +39,12 @@ void main() {
     settings = _MockSettings();
     when(() => settings.defaultFrom()).thenAnswer((_) async => 'KRW');
     when(() => settings.defaultTo()).thenAnswer((_) async => 'USD');
-    when(() => repo.getLatest(
-            baseCode: any(named: 'baseCode'),
-            forceRefresh: any(named: 'forceRefresh')))
-        .thenAnswer((_) async => _snap());
+    when(
+      () => repo.getLatest(
+        baseCode: any(named: 'baseCode'),
+        forceRefresh: any(named: 'forceRefresh'),
+      ),
+    ).thenAnswer((_) async => _snap());
   });
 
   test('initial build loads snapshot and defaults', () async {
@@ -74,9 +78,12 @@ void main() {
     final state = c.read(converterNotifierProvider).valueOrNull!;
     expect(state.fromCode, 'USD');
     expect(state.toCode, 'KRW');
-    verify(() => repo.getLatest(
-            baseCode: 'USD', forceRefresh: any(named: 'forceRefresh')))
-        .called(greaterThanOrEqualTo(1));
+    verify(
+      () => repo.getLatest(
+        baseCode: 'USD',
+        forceRefresh: any(named: 'forceRefresh'),
+      ),
+    ).called(greaterThanOrEqualTo(1));
   });
 
   test('refresh forces API call', () async {

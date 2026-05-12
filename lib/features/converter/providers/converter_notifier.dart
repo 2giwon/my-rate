@@ -119,18 +119,13 @@ class ConverterNotifier extends _$ConverterNotifier {
     if (current == null) return;
     try {
       final snap = await repo.getLatest(baseCode: base, forceRefresh: force);
-      state = AsyncData(current.copyWith(
-        snapshot: snap,
-        loading: false,
-        isStale: false,
-        clearError: true,
-      ));
+      state = AsyncData(
+        current.copyWith(snapshot: snap, loading: false, isStale: false, clearError: true),
+      );
     } on NetworkException catch (e) {
-      state = AsyncData(current.copyWith(
-        loading: false,
-        error: e,
-        isStale: current.snapshot != null,
-      ));
+      state = AsyncData(
+        current.copyWith(loading: false, error: e, isStale: current.snapshot != null),
+      );
     }
   }
 }

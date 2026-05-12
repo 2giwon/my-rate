@@ -46,13 +46,12 @@ class AppSettings {
     String? defaultTo,
     String? language,
     String? themeMode,
-  }) =>
-      AppSettings(
-        defaultFrom: defaultFrom ?? this.defaultFrom,
-        defaultTo: defaultTo ?? this.defaultTo,
-        language: language ?? this.language,
-        themeMode: themeMode ?? this.themeMode,
-      );
+  }) => AppSettings(
+    defaultFrom: defaultFrom ?? this.defaultFrom,
+    defaultTo: defaultTo ?? this.defaultTo,
+    language: language ?? this.language,
+    themeMode: themeMode ?? this.themeMode,
+  );
 }
 
 @Riverpod(keepAlive: true)

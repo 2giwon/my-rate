@@ -20,15 +20,13 @@ class CurrencyPickerState {
   final List<Currency> popular;
   final String query;
 
-  List<Currency> get favoriteCurrencies =>
-      all.where((c) => favorites.contains(c.code)).toList();
+  List<Currency> get favoriteCurrencies => all.where((c) => favorites.contains(c.code)).toList();
 
   List<Currency> get searched {
     if (query.isEmpty) return all;
     final q = query.toLowerCase();
     return all
-        .where((c) =>
-            c.code.toLowerCase().contains(q) || c.name.toLowerCase().contains(q))
+        .where((c) => c.code.toLowerCase().contains(q) || c.name.toLowerCase().contains(q))
         .toList();
   }
 
@@ -37,25 +35,25 @@ class CurrencyPickerState {
     List<String>? favorites,
     List<Currency>? popular,
     String? query,
-  }) =>
-      CurrencyPickerState(
-        all: all ?? this.all,
-        favorites: favorites ?? this.favorites,
-        popular: popular ?? this.popular,
-        query: query ?? this.query,
-      );
+  }) => CurrencyPickerState(
+    all: all ?? this.all,
+    favorites: favorites ?? this.favorites,
+    popular: popular ?? this.popular,
+    query: query ?? this.query,
+  );
 }
 
 @riverpod
 class CurrencyPickerNotifier extends _$CurrencyPickerNotifier {
   @override
-  Future<CurrencyPickerState> build({required List<String> availableCodes, required String languageCode}) async {
+  Future<CurrencyPickerState> build({
+    required List<String> availableCodes,
+    required String languageCode,
+  }) async {
     final catalog = await ref.watch(currencyCatalogProvider.future);
     final repo = await ref.watch(exchangeRateRepositoryProvider.future);
 
-    final all = catalog
-        .resolveAll(availableCodes, languageCode: languageCode)
-        .toList()
+    final all = catalog.resolveAll(availableCodes, languageCode: languageCode).toList()
       ..sort((a, b) => a.code.compareTo(b.code));
 
     final fav = await repo.getFavoriteCodes();
