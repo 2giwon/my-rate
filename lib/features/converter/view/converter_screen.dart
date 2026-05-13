@@ -6,20 +6,17 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/routing/app_router.dart';
-import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../data/exchange_rate/providers.dart';
 import '../../../domain/exchange_rate/models.dart';
 import '../providers/converter_notifier.dart';
 import '../providers/tip_tax_notifier.dart';
-import 'widgets/amount_input.dart';
-import 'widgets/currency_cell.dart';
+import 'widgets/currency_card_stack.dart';
 import 'widgets/direct_rate_label.dart';
 import 'widgets/offline_banner.dart';
 import 'widgets/panels/discount_panel.dart';
 import 'widgets/panels/tax_panel.dart';
 import 'widgets/panels/tip_panel.dart';
-import 'widgets/swap_button.dart';
 import 'widgets/tip_tax_segment.dart';
 import '../../currency_picker/view/currency_picker_screen.dart';
 
@@ -35,16 +32,21 @@ class ConverterScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.appTitle),
+        title: Text(
+          l10n.appTitle,
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        toolbarHeight: 64,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded),
             onPressed: () => ref.read(converterNotifierProvider.notifier).refresh(),
           ),
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings_outlined),
             onPressed: () => context.push(AppRoutes.settings),
           ),
+          const SizedBox(width: 4),
         ],
       ),
       body: state.when(
@@ -52,7 +54,7 @@ class ConverterScreen extends ConsumerWidget {
         error: (e, _) => Center(child: Text('$e')),
         data: (s) {
           if (s.snapshot == null) {
-            return Center(child: Text('${l10n.refreshButton}'));
+            return Center(child: Text(l10n.refreshButton));
           }
           final snapshot = s.snapshot!;
           return catalogAsync.when(
@@ -64,80 +66,62 @@ class ConverterScreen extends ConsumerWidget {
               final toCurrency = catalog.resolve(s.toCode, languageCode: lang);
               final result = s.result;
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (s.isStale)
-                    OfflineBanner(
-                      message: l10n.offlineBanner(
-                        DateFormatter.formatRateTimestamp(snapshot.apiUpdatedAt.toLocal()),
-                      ),
-                    )
-                  else
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: Text(
-                        '${l10n.lastUpdatedPrefix} ${DateFormatter.formatRateTimestamp(snapshot.apiUpdatedAt.toLocal())}',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ),
-                  CurrencyCell(
-                    currency: fromCurrency,
-                    onTap: () => _openPicker(context, ref, isFrom: true, snapshot: snapshot),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: AmountInput(
-                      value: s.amount,
-                      decimalPlaces: fromCurrency.decimalPlaces,
-                      onChanged: (v) {
-                        ref.read(converterNotifierProvider.notifier).setAmount(v);
-                        ref.read(tipTaxNotifierProvider.notifier).recomputeForAmount(v);
-                      },
-                    ),
-                  ),
-                  Center(
-                    child: SwapButton(
-                      onPressed: () => ref.read(converterNotifierProvider.notifier).swap(),
-                    ),
-                  ),
-                  CurrencyCell(
-                    currency: toCurrency,
-                    onTap: () => _openPicker(context, ref, isFrom: false, snapshot: snapshot),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Text(
-                      result == null
-                          ? '—'
-                          : '${CurrencyFormatter.format(result.convertedAmount, decimalPlaces: toCurrency.decimalPlaces)} ${toCurrency.shortName ?? toCurrency.code}',
-                      style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                  if (result != null)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: DirectRateLabel(
-                        fromUnit: fromCurrency.shortName ?? fromCurrency.code,
-                        toUnit: toCurrency.shortName ?? toCurrency.code,
-                        directRate: result.directRate,
-                        toDecimals: _adaptiveRateDecimals(
-                          result.directRate,
-                          toCurrency.decimalPlaces,
+              return SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (s.isStale)
+                      OfflineBanner(
+                        message: l10n.offlineBanner(
+                          DateFormatter.formatRateTimestamp(snapshot.apiUpdatedAt.toLocal()),
                         ),
-                        basedOn: snapshot.apiUpdatedAt,
+                      ),
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                      child: CurrencyCardStack(
+                        fromCurrency: fromCurrency,
+                        toCurrency: toCurrency,
+                        amount: s.amount,
+                        convertedAmount: result?.convertedAmount,
+                        onAmountChanged: (v) {
+                          ref.read(converterNotifierProvider.notifier).setAmount(v);
+                          ref.read(tipTaxNotifierProvider.notifier).recomputeForAmount(v);
+                        },
+                        onSwap: () => ref.read(converterNotifierProvider.notifier).swap(),
+                        onTapFrom: () =>
+                            _openPicker(context, ref, isFrom: true, snapshot: snapshot),
+                        onTapTo: () => _openPicker(context, ref, isFrom: false, snapshot: snapshot),
                       ),
                     ),
-                  const Divider(height: 32),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: TipTaxSegment(
-                      mode: tipTax.mode,
-                      onChanged: (m) => ref.read(tipTaxNotifierProvider.notifier).setMode(m),
+                    if (result != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Center(
+                          child: DirectRateLabel(
+                            fromUnit: fromCurrency.shortName ?? fromCurrency.code,
+                            toUnit: toCurrency.shortName ?? toCurrency.code,
+                            directRate: result.directRate,
+                            toDecimals: _adaptiveRateDecimals(
+                              result.directRate,
+                              toCurrency.decimalPlaces,
+                            ),
+                            basedOn: snapshot.apiUpdatedAt,
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 24),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: TipTaxSegment(
+                        mode: tipTax.mode,
+                        onChanged: (m) => ref.read(tipTaxNotifierProvider.notifier).setMode(m),
+                      ),
                     ),
-                  ),
-                  Expanded(child: _panel(tipTax.mode)),
-                ],
+                    _panel(tipTax.mode),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               );
             },
           );
@@ -186,7 +170,6 @@ class ConverterScreen extends ConsumerWidget {
 int adaptiveRateDecimals(double rate, int defaultDecimals) {
   final base = defaultDecimals == 0 ? 2 : defaultDecimals;
   if (rate <= 0 || rate >= 1) return base;
-  // log10(rate)이 음수 → magnitude는 0.1=1, 0.01=2, 0.001=3 ...
   final magnitude = (-math.log(rate) / math.ln10).ceil();
   return (magnitude + 3).clamp(base, 10);
 }
