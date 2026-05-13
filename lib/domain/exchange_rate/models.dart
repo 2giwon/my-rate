@@ -9,6 +9,7 @@ class Currency with _$Currency {
     required String name,
     required String? flagEmoji,
     required int decimalPlaces,
+    @Default(null) String? shortName,
   }) = _Currency;
 }
 

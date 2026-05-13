@@ -108,10 +108,7 @@ class ConverterScreen extends ConsumerWidget {
                     child: Text(
                       result == null
                           ? '—'
-                          : CurrencyFormatter.format(
-                              result.convertedAmount,
-                              decimalPlaces: toCurrency.decimalPlaces,
-                            ),
+                          : '${CurrencyFormatter.format(result.convertedAmount, decimalPlaces: toCurrency.decimalPlaces)} ${toCurrency.shortName ?? toCurrency.code}',
                       style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
                     ),
                   ),
@@ -119,10 +116,11 @@ class ConverterScreen extends ConsumerWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: DirectRateLabel(
-                        fromCode: s.fromCode,
-                        toCode: s.toCode,
+                        fromUnit: fromCurrency.shortName ?? fromCurrency.code,
+                        toUnit: toCurrency.shortName ?? toCurrency.code,
                         directRate: result.directRate,
                         toDecimals: toCurrency.decimalPlaces == 0 ? 2 : toCurrency.decimalPlaces,
+                        basedOn: snapshot.apiUpdatedAt,
                       ),
                     ),
                   const Divider(height: 32),

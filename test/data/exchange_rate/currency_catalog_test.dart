@@ -41,5 +41,33 @@ void main() {
       final catalog = CurrencyCatalog();
       expect(() => catalog.resolve('USD', languageCode: 'ko'), throwsStateError);
     });
+
+    test('shortName ko returns Korean short form (원/달러/엔)', () async {
+      final catalog = CurrencyCatalog();
+      await catalog.load();
+
+      expect(catalog.resolve('KRW', languageCode: 'ko').shortName, '원');
+      expect(catalog.resolve('USD', languageCode: 'ko').shortName, '달러');
+      expect(catalog.resolve('JPY', languageCode: 'ko').shortName, '엔');
+      expect(catalog.resolve('EUR', languageCode: 'ko').shortName, '유로');
+      expect(catalog.resolve('CNY', languageCode: 'ko').shortName, '위안');
+    });
+
+    test('shortName en returns English short form', () async {
+      final catalog = CurrencyCatalog();
+      await catalog.load();
+
+      expect(catalog.resolve('KRW', languageCode: 'en').shortName, 'won');
+      expect(catalog.resolve('USD', languageCode: 'en').shortName, 'dollar');
+      expect(catalog.resolve('JPY', languageCode: 'en').shortName, 'yen');
+    });
+
+    test('unknown code shortName falls back to ISO code', () async {
+      final catalog = CurrencyCatalog();
+      await catalog.load();
+
+      final unknown = catalog.resolve('ZZZ', languageCode: 'ko');
+      expect(unknown.shortName, 'ZZZ');
+    });
   });
 }

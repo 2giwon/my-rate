@@ -23,15 +23,18 @@ class CurrencyCatalog {
     }
     final entry = data[code];
     if (entry == null) {
-      return Currency(code: code, name: code, flagEmoji: '', decimalPlaces: 2);
+      return Currency(code: code, name: code, flagEmoji: '', decimalPlaces: 2, shortName: code);
     }
     final lang = languageCode == 'ko' ? 'ko' : 'en';
+    final shortKey = lang == 'ko' ? 'koShort' : 'enShort';
     final name = (entry[lang] as String?) ?? (entry['en'] as String?) ?? code;
+    final shortName = (entry[shortKey] as String?) ?? (entry['enShort'] as String?) ?? code;
     return Currency(
       code: code,
       name: name,
       flagEmoji: (entry['flag'] as String?) ?? '',
       decimalPlaces: (entry['decimals'] as int?) ?? 2,
+      shortName: shortName,
     );
   }
 

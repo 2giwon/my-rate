@@ -12,5 +12,10 @@ void main() {
       final dt = DateTime(2026, 1, 3, 4, 5);
       expect(DateFormatter.formatRateTimestamp(dt), '2026-01-03 04:05');
     });
+
+    test('formatRateDate returns YYYY-MM-DD without time', () {
+      final dt = DateTime(2026, 5, 13, 14, 32);
+      expect(DateFormatter.formatRateDate(dt), '2026-05-13');
+    });
   });
 }

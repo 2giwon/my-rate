@@ -21,6 +21,7 @@ mixin _$Currency {
   String get name => throw _privateConstructorUsedError;
   String? get flagEmoji => throw _privateConstructorUsedError;
   int get decimalPlaces => throw _privateConstructorUsedError;
+  String? get shortName => throw _privateConstructorUsedError;
 
   /// Create a copy of Currency
   /// with the given fields replaced by the non-null parameter values.
@@ -33,7 +34,7 @@ abstract class $CurrencyCopyWith<$Res> {
   factory $CurrencyCopyWith(Currency value, $Res Function(Currency) then) =
       _$CurrencyCopyWithImpl<$Res, Currency>;
   @useResult
-  $Res call({String code, String name, String? flagEmoji, int decimalPlaces});
+  $Res call({String code, String name, String? flagEmoji, int decimalPlaces, String? shortName});
 }
 
 /// @nodoc
@@ -54,6 +55,7 @@ class _$CurrencyCopyWithImpl<$Res, $Val extends Currency> implements $CurrencyCo
     Object? name = null,
     Object? flagEmoji = freezed,
     Object? decimalPlaces = null,
+    Object? shortName = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -73,6 +75,10 @@ class _$CurrencyCopyWithImpl<$Res, $Val extends Currency> implements $CurrencyCo
                 ? _value.decimalPlaces
                 : decimalPlaces // ignore: cast_nullable_to_non_nullable
                       as int,
+            shortName: freezed == shortName
+                ? _value.shortName
+                : shortName // ignore: cast_nullable_to_non_nullable
+                      as String?,
           )
           as $Val,
     );
@@ -85,7 +91,7 @@ abstract class _$$CurrencyImplCopyWith<$Res> implements $CurrencyCopyWith<$Res> 
       __$$CurrencyImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String code, String name, String? flagEmoji, int decimalPlaces});
+  $Res call({String code, String name, String? flagEmoji, int decimalPlaces, String? shortName});
 }
 
 /// @nodoc
@@ -103,6 +109,7 @@ class __$$CurrencyImplCopyWithImpl<$Res> extends _$CurrencyCopyWithImpl<$Res, _$
     Object? name = null,
     Object? flagEmoji = freezed,
     Object? decimalPlaces = null,
+    Object? shortName = freezed,
   }) {
     return _then(
       _$CurrencyImpl(
@@ -122,6 +129,10 @@ class __$$CurrencyImplCopyWithImpl<$Res> extends _$CurrencyCopyWithImpl<$Res, _$
             ? _value.decimalPlaces
             : decimalPlaces // ignore: cast_nullable_to_non_nullable
                   as int,
+        shortName: freezed == shortName
+            ? _value.shortName
+            : shortName // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -135,6 +146,7 @@ class _$CurrencyImpl implements _Currency {
     required this.name,
     required this.flagEmoji,
     required this.decimalPlaces,
+    this.shortName = null,
   });
 
   @override
@@ -145,10 +157,13 @@ class _$CurrencyImpl implements _Currency {
   final String? flagEmoji;
   @override
   final int decimalPlaces;
+  @override
+  @JsonKey()
+  final String? shortName;
 
   @override
   String toString() {
-    return 'Currency(code: $code, name: $name, flagEmoji: $flagEmoji, decimalPlaces: $decimalPlaces)';
+    return 'Currency(code: $code, name: $name, flagEmoji: $flagEmoji, decimalPlaces: $decimalPlaces, shortName: $shortName)';
   }
 
   @override
@@ -160,11 +175,12 @@ class _$CurrencyImpl implements _Currency {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.flagEmoji, flagEmoji) || other.flagEmoji == flagEmoji) &&
             (identical(other.decimalPlaces, decimalPlaces) ||
-                other.decimalPlaces == decimalPlaces));
+                other.decimalPlaces == decimalPlaces) &&
+            (identical(other.shortName, shortName) || other.shortName == shortName));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, code, name, flagEmoji, decimalPlaces);
+  int get hashCode => Object.hash(runtimeType, code, name, flagEmoji, decimalPlaces, shortName);
 
   /// Create a copy of Currency
   /// with the given fields replaced by the non-null parameter values.
@@ -181,6 +197,7 @@ abstract class _Currency implements Currency {
     required final String name,
     required final String? flagEmoji,
     required final int decimalPlaces,
+    final String? shortName,
   }) = _$CurrencyImpl;
 
   @override
@@ -191,6 +208,8 @@ abstract class _Currency implements Currency {
   String? get flagEmoji;
   @override
   int get decimalPlaces;
+  @override
+  String? get shortName;
 
   /// Create a copy of Currency
   /// with the given fields replaced by the non-null parameter values.
