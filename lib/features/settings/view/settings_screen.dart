@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/popular_currencies.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/routing/app_router.dart';
+import '../../../core/utils/date_formatter.dart';
 import '../../converter/providers/converter_notifier.dart';
 import '../../currency_picker/view/currency_picker_screen.dart';
 import '../providers/settings_notifier.dart';
@@ -16,6 +17,9 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final settings = ref.watch(settingsNotifierProvider);
+    final isKo = Localizations.localeOf(context).languageCode == 'ko';
+    final converterState = ref.watch(converterNotifierProvider).valueOrNull;
+    final lastUpdated = converterState?.snapshot?.apiUpdatedAt;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settingsTitle)),
@@ -78,6 +82,12 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             const Divider(),
+            // spec § 4.4: 마지막 갱신 시각 (converter snapshot의 apiUpdatedAt)
+            if (lastUpdated != null)
+              ListTile(
+                title: Text(isKo ? '마지막 갱신' : 'Last updated'),
+                trailing: Text(DateFormatter.formatRateTimestamp(lastUpdated.toLocal())),
+              ),
             ListTile(
               title: Text(l10n.settingsClearCache),
               trailing: const Icon(Icons.chevron_right),
@@ -88,6 +98,28 @@ class SettingsScreen extends ConsumerWidget {
                   context,
                 ).showSnackBar(const SnackBar(content: Text('Cache cleared')));
               },
+            ),
+            const Divider(),
+            // spec § 4.4: 앱 정보
+            ListTile(
+              title: Text(isKo ? '앱 정보' : 'About'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => showAboutDialog(
+                context: context,
+                applicationName: 'MyRate',
+                applicationVersion: '0.1.0',
+                applicationLegalese: isKo ? '광고 없는 환율 계산기' : 'Ad-free currency converter',
+              ),
+            ),
+            // spec § 4.4: 오픈소스 라이선스
+            ListTile(
+              title: Text(isKo ? '오픈소스 라이선스' : 'Open source licenses'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => showLicensePage(
+                context: context,
+                applicationName: 'MyRate',
+                applicationVersion: '0.1.0',
+              ),
             ),
           ],
         ),
