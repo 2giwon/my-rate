@@ -160,39 +160,60 @@ void main() {
         DateTime.fromMillisecondsSinceEpoch(1715558400 * 1000, isUtc: true),
       );
       // 두 값의 차이는 정확히 24시간이어야 한다 (API 갱신 주기)
-      expect(
-        snap.apiNextUpdateAt.difference(snap.apiUpdatedAt),
-        const Duration(hours: 24),
-      );
+      expect(snap.apiNextUpdateAt.difference(snap.apiUpdatedAt), const Duration(hours: 24));
     });
 
-    test('ApiException은 repository에서 catch 되지 않고 그대로 전파된다', () async {
-      // Spec 10: API HTTP 4xx/5xx + 잘못된 API 키 등은 ApiException/InvalidApiKeyException으로
-      // 표현된다. repository_impl 코드를 보면 NetworkException만 fallback 처리하고
-      // ApiException은 catch 하지 않는다 — features 레이어에서 별도 처리해야 함.
-      // 이 동작이 spec과 일치하는지 명시적으로 잠근다.
+    test('ApiException + 캐시 없음 → 그대로 전파 (spec § 10)', () async {
+      // Spec 10: API HTTP 4xx/5xx — 캐시가 없으면 에러 화면.
       when(() => cache.read('USD')).thenAnswer((_) async => null);
       when(
         () => api.fetchLatest('USD'),
       ).thenThrow(const ApiException('Server Error', statusCode: 500));
 
-      await expectLater(
-        repo.getLatest(baseCode: 'USD'),
-        throwsA(isA<ApiException>()),
-      );
+      await expectLater(repo.getLatest(baseCode: 'USD'), throwsA(isA<ApiException>()));
     });
 
-    test('InvalidApiKeyException도 그대로 전파된다 (캐시 fallback 없음)', () async {
-      // Spec 10: '잘못된 API 키' 상태는 fallback 없이 사용자에게 노출되어야 한다.
-      when(() => cache.read('USD')).thenAnswer((_) async => null);
+    test('ApiException + 캐시 있음 → 캐시 fallback (spec § 10)', () async {
+      // Spec 10: API HTTP 4xx/5xx + 캐시 있으면 fallback + 토스트.
+      // 만료된 캐시도 fallback 대상에 포함된다 (네트워크 장애 = isStale 분기와 동일).
+      final cached = ExchangeRateSnapshot(
+        baseCode: 'USD',
+        rates: const {'KRW': 1300.0},
+        fetchedAt: DateTime.utc(2026, 5, 1),
+        apiUpdatedAt: DateTime.utc(2026, 5, 1),
+        apiNextUpdateAt: DateTime.utc(2026, 5, 2), // 만료됨
+      );
+      when(() => cache.read('USD')).thenAnswer((_) async => cached);
       when(
         () => api.fetchLatest('USD'),
-      ).thenThrow(const InvalidApiKeyException('invalid-key'));
+      ).thenThrow(const ApiException('Server Error', statusCode: 500));
 
-      await expectLater(
-        repo.getLatest(baseCode: 'USD'),
-        throwsA(isA<InvalidApiKeyException>()),
+      final r = await repo.getLatest(baseCode: 'USD');
+      expect(r.rates['KRW'], 1300.0);
+      expect(r.baseCode, 'USD');
+    });
+
+    test('InvalidApiKeyException은 캐시 유무와 무관하게 항상 전파된다 (spec § 10)', () async {
+      // Spec 10: '잘못된 API 키'는 개발자 설정 오류 — fallback 없이 사용자에게 노출.
+      // 캐시가 있어도 fallback 하지 않는 것이 중요 (잘못된 키로 들어온 데이터를 정상으로 보이게 하면 안 됨).
+      final cached = ExchangeRateSnapshot(
+        baseCode: 'USD',
+        rates: const {'KRW': 1300.0},
+        fetchedAt: DateTime.utc(2026, 5, 1),
+        apiUpdatedAt: DateTime.utc(2026, 5, 1),
+        apiNextUpdateAt: DateTime.utc(2026, 5, 2),
       );
+      when(() => cache.read('USD')).thenAnswer((_) async => cached);
+      when(() => api.fetchLatest('USD')).thenThrow(const InvalidApiKeyException('invalid-key'));
+
+      await expectLater(repo.getLatest(baseCode: 'USD'), throwsA(isA<InvalidApiKeyException>()));
+    });
+
+    test('InvalidApiKeyException + 캐시 없음 → 그대로 전파', () async {
+      when(() => cache.read('USD')).thenAnswer((_) async => null);
+      when(() => api.fetchLatest('USD')).thenThrow(const InvalidApiKeyException('invalid-key'));
+
+      await expectLater(repo.getLatest(baseCode: 'USD'), throwsA(isA<InvalidApiKeyException>()));
     });
 
     test('연속 호출 시 캐시 유효하면 API는 1번도 호출되지 않는다 (월 1500건 보호)', () async {
@@ -241,40 +262,32 @@ void main() {
       });
 
       final api = ExchangeRateApi(dio: dio, apiKey: 'inactive');
-      expect(
-        () => api.fetchLatest('USD'),
-        throwsA(isA<InvalidApiKeyException>()),
-      );
+      expect(() => api.fetchLatest('USD'), throwsA(isA<InvalidApiKeyException>()));
     });
 
-    test(
-      'result=error + unsupported-code → ApiException (not InvalidApiKeyException)',
-      () async {
-        // spec 10: 일반 API 에러는 ApiException으로 분류.
-        final dio = Dio();
-        final adapter = _FakeAdapter();
-        dio.httpClientAdapter = adapter;
+    test('result=error + unsupported-code → ApiException (not InvalidApiKeyException)', () async {
+      // spec 10: 일반 API 에러는 ApiException으로 분류.
+      final dio = Dio();
+      final adapter = _FakeAdapter();
+      dio.httpClientAdapter = adapter;
 
-        when(() => adapter.fetch(any(), any(), any())).thenAnswer((_) async {
-          return ResponseBody.fromString(
-            '{"result":"error","error-type":"unsupported-code"}',
-            200,
-            headers: {
-              Headers.contentTypeHeader: ['application/json'],
-            },
-          );
-        });
-
-        final api = ExchangeRateApi(dio: dio, apiKey: 'k');
-        // ApiException이지만 InvalidApiKeyException은 아니어야 함
-        expect(
-          () => api.fetchLatest('USD'),
-          throwsA(
-            allOf(isA<ApiException>(), isNot(isA<InvalidApiKeyException>())),
-          ),
+      when(() => adapter.fetch(any(), any(), any())).thenAnswer((_) async {
+        return ResponseBody.fromString(
+          '{"result":"error","error-type":"unsupported-code"}',
+          200,
+          headers: {
+            Headers.contentTypeHeader: ['application/json'],
+          },
         );
-      },
-    );
+      });
+
+      final api = ExchangeRateApi(dio: dio, apiKey: 'k');
+      // ApiException이지만 InvalidApiKeyException은 아니어야 함
+      expect(
+        () => api.fetchLatest('USD'),
+        throwsA(allOf(isA<ApiException>(), isNot(isA<InvalidApiKeyException>()))),
+      );
+    });
 
     test('HTTP 404 → ApiException with statusCode (spec 10)', () async {
       // Developer는 500만 검증. spec 10은 4xx도 동일 fallback 카테고리.
@@ -289,9 +302,7 @@ void main() {
       final api = ExchangeRateApi(dio: dio, apiKey: 'k');
       expect(
         () => api.fetchLatest('USD'),
-        throwsA(
-          isA<ApiException>().having((e) => e.statusCode, 'statusCode', 404),
-        ),
+        throwsA(isA<ApiException>().having((e) => e.statusCode, 'statusCode', 404)),
       );
     });
   });
@@ -375,12 +386,7 @@ void main() {
     test('매우 큰 수 (1조원) 도 안전하게 변환', () {
       // KRW 1조원 → USD 환산 — overflow 없이 정상 처리되어야 함.
       final big = 1000000000000.0; // 1조
-      final r = convert(
-        snap: snap,
-        fromCode: 'KRW',
-        toCode: 'USD',
-        amount: big,
-      );
+      final r = convert(snap: snap, fromCode: 'KRW', toCode: 'USD', amount: big);
       expect(r.convertedAmount, closeTo(big / 1362.5, 1e-3));
       expect(r.convertedAmount.isFinite, isTrue);
     });
@@ -415,9 +421,7 @@ void main() {
 
     setUp(() {
       repo = _MockRepo();
-      when(
-        () => repo.getFavoriteCodes(),
-      ).thenAnswer((_) async => ['KRW', 'USD']);
+      when(() => repo.getFavoriteCodes()).thenAnswer((_) async => ['KRW', 'USD']);
       when(() => repo.addFavorite(any())).thenAnswer((_) async {});
       when(() => repo.removeFavorite(any())).thenAnswer((_) async {});
     });

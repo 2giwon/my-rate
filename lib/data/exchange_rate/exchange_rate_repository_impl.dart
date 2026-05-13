@@ -46,9 +46,16 @@ class ExchangeRateRepositoryImpl implements ExchangeRateRepository {
       final snap = _fromDto(dto, fetchedAt: now);
       await _cache.save(snap);
       return snap;
+    } on InvalidApiKeyException {
+      // spec § 10: '잘못된 API 키'는 개발자 설정 오류 — fallback 없이 그대로 전파.
+      rethrow;
     } on NetworkException catch (e) {
       if (cached != null) return cached;
       throw NetworkException(e.message, cause: e.cause, hasCache: false);
+    } on ApiException {
+      // spec § 10: API HTTP 4xx/5xx + 캐시 있음 → fallback. 없으면 그대로 전파.
+      if (cached != null) return cached;
+      rethrow;
     }
   }
 
