@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/constants/popular_currencies.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
+import '../../../core/routing/app_router.dart';
+import '../../converter/providers/converter_notifier.dart';
+import '../../currency_picker/view/currency_picker_screen.dart';
 import '../providers/settings_notifier.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -19,8 +24,30 @@ class SettingsScreen extends ConsumerWidget {
         error: (e, _) => Center(child: Text('$e')),
         data: (s) => ListView(
           children: [
-            ListTile(title: Text(l10n.settingsDefaultFrom), trailing: Text(s.defaultFrom)),
-            ListTile(title: Text(l10n.settingsDefaultTo), trailing: Text(s.defaultTo)),
+            ListTile(
+              title: Text(l10n.settingsDefaultFrom),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(s.defaultFrom),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.chevron_right),
+                ],
+              ),
+              onTap: () => _pickDefaultCurrency(context, ref, isFrom: true),
+            ),
+            ListTile(
+              title: Text(l10n.settingsDefaultTo),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(s.defaultTo),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.chevron_right),
+                ],
+              ),
+              onTap: () => _pickDefaultCurrency(context, ref, isFrom: false),
+            ),
             const Divider(),
             ListTile(
               title: Text(l10n.settingsLanguage),
@@ -66,5 +93,32 @@ class SettingsScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// spec § 4.4: 기본 From/To 통화는 Settings에서 picker로 변경한다.
+  /// 가용 코드는 converter의 snapshot(있으면)에서 가져오고,
+  /// 아직 로드되지 않았으면 인기 통화 + 기본값으로 폴백한다.
+  Future<void> _pickDefaultCurrency(
+    BuildContext context,
+    WidgetRef ref, {
+    required bool isFrom,
+  }) async {
+    final converterState = ref.read(converterNotifierProvider).valueOrNull;
+    final snapshotCodes = converterState?.snapshot?.rates.keys.toList();
+    final codes = (snapshotCodes != null && snapshotCodes.isNotEmpty)
+        ? snapshotCodes
+        : <String>{...kPopularCurrencyCodes, 'KRW', 'USD'}.toList();
+
+    final picked = await context.push<String>(
+      AppRoutes.picker,
+      extra: CurrencyPickerArgs(availableCodes: codes),
+    );
+    if (picked == null) return;
+    final notifier = ref.read(settingsNotifierProvider.notifier);
+    if (isFrom) {
+      await notifier.setDefaultFrom(picked);
+    } else {
+      await notifier.setDefaultTo(picked);
+    }
   }
 }
