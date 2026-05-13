@@ -24,6 +24,20 @@ class MyRateApp extends ConsumerWidget {
         locale: s.flutterLocale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
+        // 시스템 locales 리스트에서 supported(en/ko) 중 일치하는 첫 항목을 선택.
+        // Flutter 기본 폴백이 supportedLocales의 첫 항목(en)으로 떨어지는 케이스를 방지.
+        localeListResolutionCallback: (deviceLocales, supported) {
+          if (deviceLocales != null) {
+            for (final loc in deviceLocales) {
+              for (final sup in supported) {
+                if (loc.languageCode == sup.languageCode) {
+                  return sup;
+                }
+              }
+            }
+          }
+          return supported.contains(const Locale('en')) ? const Locale('en') : supported.first;
+        },
         routerConfig: router,
       ),
       loading: () => const MaterialApp(

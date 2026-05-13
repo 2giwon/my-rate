@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -119,7 +121,10 @@ class ConverterScreen extends ConsumerWidget {
                         fromUnit: fromCurrency.shortName ?? fromCurrency.code,
                         toUnit: toCurrency.shortName ?? toCurrency.code,
                         directRate: result.directRate,
-                        toDecimals: toCurrency.decimalPlaces == 0 ? 2 : toCurrency.decimalPlaces,
+                        toDecimals: _adaptiveRateDecimals(
+                          result.directRate,
+                          toCurrency.decimalPlaces,
+                        ),
                         basedOn: snapshot.apiUpdatedAt,
                       ),
                     ),
@@ -173,3 +178,18 @@ class ConverterScreen extends ConsumerWidget {
     }
   }
 }
+
+/// 환율 라벨의 표시 소수점 자리수를 적응형으로 결정한다.
+/// 큰 값(>=1)은 기본 자리수(통화별), 작은 값(<1)은 유효 숫자 4자리 확보.
+/// 예) 0.000671 → 7자리, 0.0421 → 5자리, 1.234 → 4자리(기본), 1490.20 → 2자리.
+@visibleForTesting
+int adaptiveRateDecimals(double rate, int defaultDecimals) {
+  final base = defaultDecimals == 0 ? 2 : defaultDecimals;
+  if (rate <= 0 || rate >= 1) return base;
+  // log10(rate)이 음수 → magnitude는 0.1=1, 0.01=2, 0.001=3 ...
+  final magnitude = (-math.log(rate) / math.ln10).ceil();
+  return (magnitude + 3).clamp(base, 10);
+}
+
+int _adaptiveRateDecimals(double rate, int defaultDecimals) =>
+    adaptiveRateDecimals(rate, defaultDecimals);

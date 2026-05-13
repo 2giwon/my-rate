@@ -37,6 +37,16 @@ class AppSettings {
       case 'en':
         return const Locale('en');
       default:
+        // 'system' — 단말 platform locales를 직접 조회하여 supported(ko/en)
+        // 중 가장 먼저 일치하는 것을 반환. MaterialApp의 자동 폴백이
+        // 영어로 떨어지는 일부 케이스 회피.
+        const supportedCodes = ['ko', 'en'];
+        final platform = WidgetsBinding.instance.platformDispatcher.locales;
+        for (final loc in platform) {
+          if (supportedCodes.contains(loc.languageCode)) {
+            return Locale(loc.languageCode);
+          }
+        }
         return null;
     }
   }
