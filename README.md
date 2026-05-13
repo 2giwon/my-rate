@@ -1,5 +1,9 @@
 # MyRate
 
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter)](https://flutter.dev)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](#license)
+[![Tests](https://img.shields.io/badge/tests-102%20passing-brightgreen)](#)
+
 광고 없는 환율 계산기 (Flutter).
 
 ## Features
