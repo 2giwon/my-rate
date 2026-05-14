@@ -1,11 +1,13 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:myrate/data/exchange_rate/local/settings_store.dart';
 import 'package:myrate/data/exchange_rate/providers.dart';
+import 'package:myrate/domain/calculator/models.dart';
 import 'package:myrate/domain/exchange_rate/exchange_rate_repository.dart';
 import 'package:myrate/domain/exchange_rate/models.dart';
+import 'package:myrate/features/calculator/providers/calculator_notifier.dart';
 import 'package:myrate/features/converter/providers/converter_notifier.dart';
-import 'package:riverpod/riverpod.dart';
 
 class _MockRepo extends Mock implements ExchangeRateRepository {}
 
@@ -93,5 +95,25 @@ void main() {
 
     await c.read(converterNotifierProvider.notifier).refresh();
     verify(() => repo.getLatest(baseCode: 'KRW', forceRefresh: true)).called(1);
+  });
+
+  group('calculator sync', () {
+    test(
+      'amount auto-updates when CalculatorNotifier.result changes',
+      () async {
+        final c = makeContainer();
+        addTearDown(c.dispose);
+        await c.read(converterNotifierProvider.future);
+
+        c.read(calculatorNotifierProvider.notifier).onKey(const DigitKey(1));
+        c.read(calculatorNotifierProvider.notifier).onKey(const DigitKey(2));
+        c.read(calculatorNotifierProvider.notifier).onKey(const DigitKey(3));
+
+        // Wait for ref.watch propagation through async ConverterNotifier.build.
+        await c.read(converterNotifierProvider.future);
+
+        expect(c.read(converterNotifierProvider).valueOrNull?.amount, 123.0);
+      },
+    );
   });
 }

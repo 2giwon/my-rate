@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../core/constants/defaults.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../data/exchange_rate/providers.dart';
 import '../../../domain/exchange_rate/models.dart';
+import '../../calculator/providers/calculator_notifier.dart';
 import '../logic/conversion.dart';
 
 part 'converter_notifier.g.dart';
@@ -60,6 +62,11 @@ class ConverterState {
 class ConverterNotifier extends _$ConverterNotifier {
   @override
   Future<ConverterState> build() async {
+    // Subscribe to calculator result; default to AppDefaults.defaultAmount
+    // when calculator is empty.
+    final calcResult = ref.watch(calculatorNotifierProvider).result;
+    final amount = calcResult ?? AppDefaults.defaultAmount;
+
     final settings = await ref.watch(settingsStoreProvider.future);
     final from = await settings.defaultFrom();
     final to = await settings.defaultTo();
@@ -67,12 +74,17 @@ class ConverterNotifier extends _$ConverterNotifier {
 
     try {
       final snap = await repo.getLatest(baseCode: from);
-      return ConverterState(fromCode: from, toCode: to, amount: 100000, snapshot: snap);
+      return ConverterState(
+        fromCode: from,
+        toCode: to,
+        amount: amount,
+        snapshot: snap,
+      );
     } on NetworkException catch (e) {
       return ConverterState(
         fromCode: from,
         toCode: to,
-        amount: 100000,
+        amount: amount,
         error: e,
         isStale: e.hasCache,
       );
@@ -89,7 +101,9 @@ class ConverterNotifier extends _$ConverterNotifier {
     final s = state.valueOrNull;
     if (s == null) return;
     if (code == s.fromCode) return;
-    state = AsyncData(s.copyWith(fromCode: code, loading: true, clearError: true));
+    state = AsyncData(
+      s.copyWith(fromCode: code, loading: true, clearError: true),
+    );
     await _reloadSnapshot(base: code);
   }
 
@@ -102,7 +116,9 @@ class ConverterNotifier extends _$ConverterNotifier {
   Future<void> swap() async {
     final s = state.valueOrNull;
     if (s == null) return;
-    state = AsyncData(s.copyWith(fromCode: s.toCode, toCode: s.fromCode, loading: true));
+    state = AsyncData(
+      s.copyWith(fromCode: s.toCode, toCode: s.fromCode, loading: true),
+    );
     await _reloadSnapshot(base: s.toCode);
   }
 
@@ -113,18 +129,30 @@ class ConverterNotifier extends _$ConverterNotifier {
     await _reloadSnapshot(base: s.fromCode, force: true);
   }
 
-  Future<void> _reloadSnapshot({required String base, bool force = false}) async {
+  Future<void> _reloadSnapshot({
+    required String base,
+    bool force = false,
+  }) async {
     final repo = await ref.read(exchangeRateRepositoryProvider.future);
     final current = state.valueOrNull;
     if (current == null) return;
     try {
       final snap = await repo.getLatest(baseCode: base, forceRefresh: force);
       state = AsyncData(
-        current.copyWith(snapshot: snap, loading: false, isStale: false, clearError: true),
+        current.copyWith(
+          snapshot: snap,
+          loading: false,
+          isStale: false,
+          clearError: true,
+        ),
       );
     } on NetworkException catch (e) {
       state = AsyncData(
-        current.copyWith(loading: false, error: e, isStale: current.snapshot != null),
+        current.copyWith(
+          loading: false,
+          error: e,
+          isStale: current.snapshot != null,
+        ),
       );
     }
   }
