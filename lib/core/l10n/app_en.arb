@@ -40,5 +40,24 @@
   "discountByPercent": "By percent",
   "discountByAmount": "By amount",
   "finalAmountLabel": "Final amount",
-  "refreshButton": "Refresh"
+  "refreshButton": "Refresh",
+  "calcError": "Error",
+  "calcMenuTitle": "Calculation tools",
+  "calcMenuTip": "Tip",
+  "calcMenuTax": "Tax",
+  "calcMenuDiscount": "Discount",
+  "panelBaseAmount": "Base amount",
+  "panelApplyButton": "Apply",
+  "appBarRateLabel": "1 {from} = {value} {to}",
+  "@appBarRateLabel": {
+    "placeholders": {
+      "from": { "type": "String" },
+      "value": { "type": "String" },
+      "to": { "type": "String" }
+    }
+  },
+  "appBarTimestamp": "As of {ts}",
+  "@appBarTimestamp": {
+    "placeholders": { "ts": { "type": "String" } }
+  }
 }

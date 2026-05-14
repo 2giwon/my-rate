@@ -32,5 +32,14 @@
   "discountByPercent": "비율(%)",
   "discountByAmount": "금액",
   "finalAmountLabel": "최종 금액",
-  "refreshButton": "새로고침"
+  "refreshButton": "새로고침",
+  "calcError": "오류",
+  "calcMenuTitle": "계산 도구",
+  "calcMenuTip": "팁 계산",
+  "calcMenuTax": "세금 계산",
+  "calcMenuDiscount": "할인 계산",
+  "panelBaseAmount": "기준 금액",
+  "panelApplyButton": "적용",
+  "appBarRateLabel": "1 {from} = {value} {to}",
+  "appBarTimestamp": "{ts} 기준"
 }
