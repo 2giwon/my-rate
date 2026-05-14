@@ -6,19 +6,22 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/routing/app_router.dart';
-import '../../../core/utils/date_formatter.dart';
 import '../../../data/exchange_rate/providers.dart';
+import '../../../domain/calculator/models.dart';
 import '../../../domain/exchange_rate/models.dart';
+import '../../calculator/providers/calculator_notifier.dart';
+import '../../calculator/view/widgets/calculator_keypad.dart';
+import '../../currency_picker/view/currency_picker_screen.dart';
 import '../providers/converter_notifier.dart';
 import '../providers/tip_tax_notifier.dart';
-import 'widgets/currency_card_stack.dart';
-import 'widgets/direct_rate_label.dart';
+import 'widgets/converted_display.dart';
+import 'widgets/direct_rate_inline.dart';
+import 'widgets/expression_display.dart';
 import 'widgets/offline_banner.dart';
 import 'widgets/panels/discount_panel.dart';
 import 'widgets/panels/tax_panel.dart';
 import 'widgets/panels/tip_panel.dart';
-import 'widgets/tip_tax_segment.dart';
-import '../../currency_picker/view/currency_picker_screen.dart';
+import 'widgets/tip_tax_menu_button.dart';
 
 class ConverterScreen extends ConsumerWidget {
   const ConverterScreen({super.key});
@@ -28,19 +31,19 @@ class ConverterScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(converterNotifierProvider);
     final catalogAsync = ref.watch(currencyCatalogProvider);
-    final tipTax = ref.watch(tipTaxNotifierProvider);
+    final calcState = ref.watch(calculatorNotifierProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          l10n.appTitle,
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
-        ),
-        toolbarHeight: 64,
+        titleSpacing: 12,
+        toolbarHeight: 72,
         actions: [
+          TipTaxMenuButton(onSelected: (m) => _openPanel(context, ref, m)),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
-            onPressed: () => ref.read(converterNotifierProvider.notifier).refresh(),
+            tooltip: l10n.refreshButton,
+            onPressed: () =>
+                ref.read(converterNotifierProvider.notifier).refresh(),
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
@@ -48,80 +51,93 @@ class ConverterScreen extends ConsumerWidget {
           ),
           const SizedBox(width: 4),
         ],
+        title: state.when(
+          loading: () => Text(l10n.appTitle),
+          error: (_, _) => Text(l10n.appTitle),
+          data: (s) {
+            final snap = s.snapshot;
+            if (snap == null) return Text(l10n.appTitle);
+            final result = s.result;
+            final toDecimals = catalogAsync.maybeWhen(
+              data: (catalog) {
+                final lang = Localizations.localeOf(context).languageCode;
+                return catalog
+                    .resolve(s.toCode, languageCode: lang)
+                    .decimalPlaces;
+              },
+              orElse: () => 2,
+            );
+            final adapted = _adaptiveRateDecimals(
+              result?.directRate ?? 1,
+              toDecimals,
+            );
+            return DirectRateInline(
+              fromCode: s.fromCode,
+              toCode: s.toCode,
+              directRate: result?.directRate,
+              basedOn: result?.basedOn,
+              toDecimals: adapted,
+            );
+          },
+        ),
       ),
       body: state.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('$e')),
         data: (s) {
-          if (s.snapshot == null) {
-            return Center(child: Text(l10n.refreshButton));
-          }
-          final snapshot = s.snapshot!;
+          final snap = s.snapshot;
+          if (snap == null) return Center(child: Text(l10n.refreshButton));
           return catalogAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => Center(child: Text('$e')),
             data: (catalog) {
               final lang = Localizations.localeOf(context).languageCode;
-              final fromCurrency = catalog.resolve(s.fromCode, languageCode: lang);
+              final fromCurrency = catalog.resolve(
+                s.fromCode,
+                languageCode: lang,
+              );
               final toCurrency = catalog.resolve(s.toCode, languageCode: lang);
-              final result = s.result;
-
-              return SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (s.isStale)
-                      OfflineBanner(
-                        message: l10n.offlineBanner(
-                          DateFormatter.formatRateTimestamp(snapshot.apiUpdatedAt.toLocal()),
-                        ),
-                      ),
-                    const SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                      child: CurrencyCardStack(
-                        fromCurrency: fromCurrency,
-                        toCurrency: toCurrency,
-                        amount: s.amount,
-                        convertedAmount: result?.convertedAmount,
-                        onAmountChanged: (v) {
-                          ref.read(converterNotifierProvider.notifier).setAmount(v);
-                          ref.read(tipTaxNotifierProvider.notifier).recomputeForAmount(v);
-                        },
-                        onSwap: () => ref.read(converterNotifierProvider.notifier).swap(),
-                        onTapFrom: () =>
-                            _openPicker(context, ref, isFrom: true, snapshot: snapshot),
-                        onTapTo: () => _openPicker(context, ref, isFrom: false, snapshot: snapshot),
+              final convertedAmount = s.result?.convertedAmount;
+              return Column(
+                children: [
+                  if (s.isStale)
+                    OfflineBanner(
+                      message: l10n.offlineBanner(
+                        _formatTimestamp(snap.apiUpdatedAt.toLocal()),
                       ),
                     ),
-                    if (result != null)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Center(
-                          child: DirectRateLabel(
-                            fromUnit: fromCurrency.shortName ?? fromCurrency.code,
-                            toUnit: toCurrency.shortName ?? toCurrency.code,
-                            directRate: result.directRate,
-                            toDecimals: _adaptiveRateDecimals(
-                              result.directRate,
-                              toCurrency.decimalPlaces,
-                            ),
-                            basedOn: snapshot.apiUpdatedAt,
-                          ),
-                        ),
-                      ),
-                    const SizedBox(height: 24),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: TipTaxSegment(
-                        mode: tipTax.mode,
-                        onChanged: (m) => ref.read(tipTaxNotifierProvider.notifier).setMode(m),
-                      ),
+                  const SizedBox(height: 4),
+                  ExpressionDisplay(
+                    currency: fromCurrency,
+                    expression: calcState.expression,
+                    result: s.amount,
+                    hasError: calcState.hasError,
+                    errorLabel: l10n.calcError,
+                    onTapHeader: () =>
+                        _openPicker(context, ref, isFrom: true, snapshot: snap),
+                    onBackspace: () => ref
+                        .read(calculatorNotifierProvider.notifier)
+                        .onKey(const BackspaceKey()),
+                  ),
+                  Center(
+                    child: IconButton(
+                      icon: const Icon(Icons.swap_vert_rounded, size: 32),
+                      onPressed: () =>
+                          ref.read(converterNotifierProvider.notifier).swap(),
                     ),
-                    _panel(tipTax.mode),
-                    const SizedBox(height: 24),
-                  ],
-                ),
+                  ),
+                  ConvertedDisplay(
+                    currency: toCurrency,
+                    convertedValue: convertedAmount,
+                    onTapHeader: () => _openPicker(
+                      context,
+                      ref,
+                      isFrom: false,
+                      snapshot: snap,
+                    ),
+                  ),
+                  const Expanded(child: CalculatorKeypad()),
+                ],
               );
             },
           );
@@ -130,17 +146,32 @@ class ConverterScreen extends ConsumerWidget {
     );
   }
 
-  Widget _panel(TipTaxMode mode) {
-    switch (mode) {
-      case TipTaxMode.tip:
-        return const TipPanel();
-      case TipTaxMode.tax:
-        return const TaxPanel();
-      case TipTaxMode.discount:
-        return const DiscountPanel();
-      case TipTaxMode.none:
-        return const SizedBox.shrink();
-    }
+  String _formatTimestamp(DateTime t) {
+    final y = t.year.toString().padLeft(4, '0');
+    final m = t.month.toString().padLeft(2, '0');
+    final d = t.day.toString().padLeft(2, '0');
+    final hh = t.hour.toString().padLeft(2, '0');
+    final mm = t.minute.toString().padLeft(2, '0');
+    return '$y-$m-$d $hh:$mm';
+  }
+
+  Future<void> _openPanel(
+    BuildContext context,
+    WidgetRef ref,
+    TipTaxMode mode,
+  ) async {
+    ref.read(tipTaxNotifierProvider.notifier).setMode(mode);
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => switch (mode) {
+        TipTaxMode.tip => const TipPanel(),
+        TipTaxMode.tax => const TaxPanel(),
+        TipTaxMode.discount => const DiscountPanel(),
+        TipTaxMode.none => const SizedBox.shrink(),
+      },
+    );
   }
 
   Future<void> _openPicker(
@@ -163,9 +194,9 @@ class ConverterScreen extends ConsumerWidget {
   }
 }
 
-/// 환율 라벨의 표시 소수점 자리수를 적응형으로 결정한다.
-/// 큰 값(>=1)은 기본 자리수(통화별), 작은 값(<1)은 유효 숫자 4자리 확보.
-/// 예) 0.000671 → 7자리, 0.0421 → 5자리, 1.234 → 4자리(기본), 1490.20 → 2자리.
+/// Adaptive rate decimal: small rates (<1) get more decimals to keep
+/// 4 significant digits; rates ≥ 1 use the destination currency's
+/// default decimals (or 2 as a fallback).
 @visibleForTesting
 int adaptiveRateDecimals(double rate, int defaultDecimals) {
   final base = defaultDecimals == 0 ? 2 : defaultDecimals;
