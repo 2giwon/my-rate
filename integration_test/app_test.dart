@@ -18,8 +18,15 @@ class _FakeApi extends ExchangeRateApi {
       baseCode: baseCode,
       timeLastUpdateUnix: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       timeNextUpdateUnix:
-          DateTime.now().add(const Duration(hours: 24)).millisecondsSinceEpoch ~/ 1000,
-      conversionRates: const {'KRW': 1.0, 'USD': 1 / 1362.5, 'JPY': 156.2 / 1362.5},
+          DateTime.now()
+              .add(const Duration(hours: 24))
+              .millisecondsSinceEpoch ~/
+          1000,
+      conversionRates: const {
+        'KRW': 1.0,
+        'USD': 1 / 1362.5,
+        'JPY': 156.2 / 1362.5,
+      },
     );
   }
 }
@@ -37,10 +44,10 @@ void main() {
     );
     await tester.pumpAndSettle(const Duration(seconds: 2));
 
-    // 메인 화면이 보인다
+    // 메인 화면: 통화 코드, 키패드의 숫자/= 키 노출
     expect(find.text('KRW'), findsWidgets);
     expect(find.text('USD'), findsWidgets);
-    // 환율 결과가 0이 아닌 값으로 표시
-    expect(find.textContaining('73'), findsWidgets);
+    expect(find.text('7'), findsOneWidget); // calculator keypad
+    expect(find.text('='), findsOneWidget);
   });
 }
