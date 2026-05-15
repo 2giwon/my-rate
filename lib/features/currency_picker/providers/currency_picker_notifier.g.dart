@@ -6,7 +6,8 @@ part of 'currency_picker_notifier.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$currencyPickerNotifierHash() => r'78a6f1996727e7bb414046394b405d15e150d71f';
+String _$currencyPickerNotifierHash() =>
+    r'78a6f1996727e7bb414046394b405d15e150d71f';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -45,7 +46,8 @@ abstract class _$CurrencyPickerNotifier
 const currencyPickerNotifierProvider = CurrencyPickerNotifierFamily();
 
 /// See also [CurrencyPickerNotifier].
-class CurrencyPickerNotifierFamily extends Family<AsyncValue<CurrencyPickerState>> {
+class CurrencyPickerNotifierFamily
+    extends Family<AsyncValue<CurrencyPickerState>> {
   /// See also [CurrencyPickerNotifier].
   const CurrencyPickerNotifierFamily();
 
@@ -64,7 +66,10 @@ class CurrencyPickerNotifierFamily extends Family<AsyncValue<CurrencyPickerState
   CurrencyPickerNotifierProvider getProviderOverride(
     covariant CurrencyPickerNotifierProvider provider,
   ) {
-    return call(availableCodes: provider.availableCodes, languageCode: provider.languageCode);
+    return call(
+      availableCodes: provider.availableCodes,
+      languageCode: provider.languageCode,
+    );
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -75,7 +80,8 @@ class CurrencyPickerNotifierFamily extends Family<AsyncValue<CurrencyPickerState
   static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
 
   @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies => _allTransitiveDependencies;
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
 
   @override
   String? get name => r'currencyPickerNotifierProvider';
@@ -83,7 +89,11 @@ class CurrencyPickerNotifierFamily extends Family<AsyncValue<CurrencyPickerState
 
 /// See also [CurrencyPickerNotifier].
 class CurrencyPickerNotifierProvider
-    extends AutoDisposeAsyncNotifierProviderImpl<CurrencyPickerNotifier, CurrencyPickerState> {
+    extends
+        AutoDisposeAsyncNotifierProviderImpl<
+          CurrencyPickerNotifier,
+          CurrencyPickerState
+        > {
   /// See also [CurrencyPickerNotifier].
   CurrencyPickerNotifierProvider({
     required List<String> availableCodes,
@@ -98,7 +108,8 @@ class CurrencyPickerNotifierProvider
              ? null
              : _$currencyPickerNotifierHash,
          dependencies: CurrencyPickerNotifierFamily._dependencies,
-         allTransitiveDependencies: CurrencyPickerNotifierFamily._allTransitiveDependencies,
+         allTransitiveDependencies:
+             CurrencyPickerNotifierFamily._allTransitiveDependencies,
          availableCodes: availableCodes,
          languageCode: languageCode,
        );
@@ -118,8 +129,13 @@ class CurrencyPickerNotifierProvider
   final String languageCode;
 
   @override
-  FutureOr<CurrencyPickerState> runNotifierBuild(covariant CurrencyPickerNotifier notifier) {
-    return notifier.build(availableCodes: availableCodes, languageCode: languageCode);
+  FutureOr<CurrencyPickerState> runNotifierBuild(
+    covariant CurrencyPickerNotifier notifier,
+  ) {
+    return notifier.build(
+      availableCodes: availableCodes,
+      languageCode: languageCode,
+    );
   }
 
   @override
@@ -142,7 +158,10 @@ class CurrencyPickerNotifierProvider
   }
 
   @override
-  AutoDisposeAsyncNotifierProviderElement<CurrencyPickerNotifier, CurrencyPickerState>
+  AutoDisposeAsyncNotifierProviderElement<
+    CurrencyPickerNotifier,
+    CurrencyPickerState
+  >
   createElement() {
     return _CurrencyPickerNotifierProviderElement(this);
   }
@@ -166,7 +185,8 @@ class CurrencyPickerNotifierProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin CurrencyPickerNotifierRef on AutoDisposeAsyncNotifierProviderRef<CurrencyPickerState> {
+mixin CurrencyPickerNotifierRef
+    on AutoDisposeAsyncNotifierProviderRef<CurrencyPickerState> {
   /// The parameter `availableCodes` of this provider.
   List<String> get availableCodes;
 
@@ -175,14 +195,20 @@ mixin CurrencyPickerNotifierRef on AutoDisposeAsyncNotifierProviderRef<CurrencyP
 }
 
 class _CurrencyPickerNotifierProviderElement
-    extends AutoDisposeAsyncNotifierProviderElement<CurrencyPickerNotifier, CurrencyPickerState>
+    extends
+        AutoDisposeAsyncNotifierProviderElement<
+          CurrencyPickerNotifier,
+          CurrencyPickerState
+        >
     with CurrencyPickerNotifierRef {
   _CurrencyPickerNotifierProviderElement(super.provider);
 
   @override
-  List<String> get availableCodes => (origin as CurrencyPickerNotifierProvider).availableCodes;
+  List<String> get availableCodes =>
+      (origin as CurrencyPickerNotifierProvider).availableCodes;
   @override
-  String get languageCode => (origin as CurrencyPickerNotifierProvider).languageCode;
+  String get languageCode =>
+      (origin as CurrencyPickerNotifierProvider).languageCode;
 }
 
 // ignore_for_file: type=lint
