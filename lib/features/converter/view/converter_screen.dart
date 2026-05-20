@@ -81,67 +81,82 @@ class ConverterScreen extends ConsumerWidget {
           },
         ),
       ),
-      body: state.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('$e')),
-        data: (s) {
-          final snap = s.snapshot;
-          if (snap == null) return Center(child: Text(l10n.refreshButton));
-          return catalogAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(child: Text('$e')),
-            data: (catalog) {
-              final lang = Localizations.localeOf(context).languageCode;
-              final fromCurrency = catalog.resolve(
-                s.fromCode,
-                languageCode: lang,
-              );
-              final toCurrency = catalog.resolve(s.toCode, languageCode: lang);
-              final convertedAmount = s.result?.convertedAmount;
-              return Column(
-                children: [
-                  if (s.isStale)
-                    OfflineBanner(
-                      message: l10n.offlineBanner(
-                        _formatTimestamp(snap.apiUpdatedAt.toLocal()),
+      body: SafeArea(
+        top: false,
+        child: state.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(child: Text('$e')),
+          data: (s) {
+            final snap = s.snapshot;
+            if (snap == null) return Center(child: Text(l10n.refreshButton));
+            return catalogAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text('$e')),
+              data: (catalog) {
+                final lang = Localizations.localeOf(context).languageCode;
+                final fromCurrency = catalog.resolve(
+                  s.fromCode,
+                  languageCode: lang,
+                );
+                final toCurrency = catalog.resolve(
+                  s.toCode,
+                  languageCode: lang,
+                );
+                final convertedAmount = s.result?.convertedAmount;
+                return Column(
+                  children: [
+                    if (s.isStale)
+                      OfflineBanner(
+                        message: l10n.offlineBanner(
+                          _formatTimestamp(snap.apiUpdatedAt.toLocal()),
+                        ),
+                      ),
+                    ExpressionDisplay(
+                      currency: fromCurrency,
+                      expression: calcState.expression,
+                      result: s.amount,
+                      hasError: calcState.hasError,
+                      errorLabel: l10n.calcError,
+                      onTapHeader: () => _openPicker(
+                        context,
+                        ref,
+                        isFrom: true,
+                        snapshot: snap,
+                      ),
+                      onBackspace: () => ref
+                          .read(calculatorNotifierProvider.notifier)
+                          .onKey(const BackspaceKey()),
+                    ),
+                    Center(
+                      child: IconButton(
+                        icon: const Icon(Icons.swap_vert_rounded, size: 24),
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 36,
+                          minHeight: 36,
+                        ),
+                        onPressed: () =>
+                            ref.read(converterNotifierProvider.notifier).swap(),
                       ),
                     ),
-                  const SizedBox(height: 4),
-                  ExpressionDisplay(
-                    currency: fromCurrency,
-                    expression: calcState.expression,
-                    result: s.amount,
-                    hasError: calcState.hasError,
-                    errorLabel: l10n.calcError,
-                    onTapHeader: () =>
-                        _openPicker(context, ref, isFrom: true, snapshot: snap),
-                    onBackspace: () => ref
-                        .read(calculatorNotifierProvider.notifier)
-                        .onKey(const BackspaceKey()),
-                  ),
-                  Center(
-                    child: IconButton(
-                      icon: const Icon(Icons.swap_vert_rounded, size: 32),
-                      onPressed: () =>
-                          ref.read(converterNotifierProvider.notifier).swap(),
+                    ConvertedDisplay(
+                      currency: toCurrency,
+                      convertedValue: convertedAmount,
+                      onTapHeader: () => _openPicker(
+                        context,
+                        ref,
+                        isFrom: false,
+                        snapshot: snap,
+                      ),
                     ),
-                  ),
-                  ConvertedDisplay(
-                    currency: toCurrency,
-                    convertedValue: convertedAmount,
-                    onTapHeader: () => _openPicker(
-                      context,
-                      ref,
-                      isFrom: false,
-                      snapshot: snap,
-                    ),
-                  ),
-                  const Expanded(child: CalculatorKeypad()),
-                ],
-              );
-            },
-          );
-        },
+                    const Expanded(child: CalculatorKeypad()),
+                  ],
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

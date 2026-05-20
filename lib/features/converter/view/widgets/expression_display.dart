@@ -26,9 +26,9 @@ class ExpressionDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 8, 12),
+        padding: const EdgeInsets.fromLTRB(12, 4, 4, 6),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
@@ -36,38 +36,37 @@ class ExpressionDisplay extends StatelessWidget {
             InkWell(
               onTap: onTapHeader,
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.symmetric(vertical: 2),
                 child: Row(
                   children: [
                     Text(
                       currency.flagEmoji ?? '',
-                      style: const TextStyle(fontSize: 20),
+                      style: const TextStyle(fontSize: 18),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     Text(
                       currency.code,
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 4),
                     Flexible(
                       child: Text(
                         currency.name,
                         style: const TextStyle(
-                          fontSize: 13,
+                          fontSize: 12,
                           color: Colors.grey,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const Icon(Icons.expand_more, size: 18),
+                    const Icon(Icons.expand_more, size: 16),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 4),
             Row(
               children: [
                 Expanded(
@@ -76,19 +75,23 @@ class ExpressionDisplay extends StatelessWidget {
                     alignment: Alignment.centerRight,
                     child: Text(
                       expression.isEmpty ? '0' : expression,
-                      style: const TextStyle(fontSize: 16, color: Colors.grey),
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.backspace_outlined),
                   onPressed: onBackspace,
-                  iconSize: 20,
+                  iconSize: 18,
                   visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerRight,
@@ -100,7 +103,7 @@ class ExpressionDisplay extends StatelessWidget {
                         decimalPlaces: currency.decimalPlaces,
                       ),
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: 28,
                   fontWeight: FontWeight.w700,
                   color: hasError ? Colors.red : null,
                 ),
