@@ -13,7 +13,7 @@ class CalculatorKeypad extends ConsumerWidget {
       _KeySpec('C', KeyKind.edit, ClearKey()),
       _KeySpec('(', KeyKind.edit, ParenOpenKey()),
       _KeySpec(')', KeyKind.edit, ParenCloseKey()),
-      _KeySpec('⌫', KeyKind.edit, BackspaceKey()),
+      _KeySpec('⌫', KeyKind.delete, BackspaceKey()),
     ],
     [
       _KeySpec('7', KeyKind.digit, DigitKey(7)),

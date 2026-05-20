@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-enum KeyKind { digit, operator, equals, edit }
+enum KeyKind { digit, operator, equals, edit, delete }
 
 class KeyButton extends StatelessWidget {
   const KeyButton({
@@ -21,6 +21,7 @@ class KeyButton extends StatelessWidget {
     final (bg, fg) = switch (kind) {
       KeyKind.digit => (scheme.surfaceContainerHighest, scheme.onSurface),
       KeyKind.edit => (scheme.surfaceContainerHigh, scheme.onSurfaceVariant),
+      KeyKind.delete => (scheme.errorContainer, scheme.onErrorContainer),
       KeyKind.operator => (
         scheme.secondaryContainer,
         scheme.onSecondaryContainer,
