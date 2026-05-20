@@ -148,14 +148,16 @@ void main() {
       expect(s.expression, '120');
     });
 
-    test('equals sets justEvaluated', () {
+    test('equals replaces expression with result and sets justEvaluated', () {
       final s = _applyMany(const [
         DigitKey(1),
         OpKey(Operator.add),
         DigitKey(2),
         EqualsKey(),
       ]);
-      expect(s.expression, '1 + 2');
+      // On =, the original expression "1 + 2" is replaced by the result
+      // "3" so the user sees only the final value.
+      expect(s.expression, '3');
       expect(s.result, 3.0);
       expect(s.justEvaluated, isTrue);
     });

@@ -219,7 +219,14 @@ CalculatorState _evaluate(CalculatorState s) {
   final r = evaluate(resolved);
   switch (r) {
     case EvalSuccess(:final value):
-      return s.copyWith(result: value, justEvaluated: true, hasError: false);
+      // On =, replace the expression with the formatted result so the
+      // user sees only the final number — not the original calculation.
+      return s.copyWith(
+        expression: _formatResultForExpression(value),
+        result: value,
+        justEvaluated: true,
+        hasError: false,
+      );
     case EvalDivisionByZero():
     case EvalOverflow():
       return s.copyWith(hasError: true, result: null, justEvaluated: false);
