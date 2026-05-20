@@ -17,9 +17,9 @@ void main() {
     await pump(tester);
     for (final label in const [
       'C',
-      '⌫',
       '(',
       ')',
+      '⌫',
       '7',
       '8',
       '9',

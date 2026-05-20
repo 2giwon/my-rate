@@ -11,9 +11,9 @@ class CalculatorKeypad extends ConsumerWidget {
   static const List<List<_KeySpec>> _layout = [
     [
       _KeySpec('C', KeyKind.edit, ClearKey()),
-      _KeySpec('⌫', KeyKind.edit, BackspaceKey()),
       _KeySpec('(', KeyKind.edit, ParenOpenKey()),
       _KeySpec(')', KeyKind.edit, ParenCloseKey()),
+      _KeySpec('⌫', KeyKind.edit, BackspaceKey()),
     ],
     [
       _KeySpec('7', KeyKind.digit, DigitKey(7)),
