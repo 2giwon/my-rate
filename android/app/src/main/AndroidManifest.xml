@@ -1,4 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- ExchangeRate-API fetch (spec §11: 인터넷 권한만 필요). debug/profile
+         manifests already declare this for hot-reload; release builds use
+         only `main`, so without it production cannot reach the API and
+         falls back to the last cached snapshot forever. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="myrate"
         android:name="${applicationName}"
