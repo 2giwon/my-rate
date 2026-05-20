@@ -40,7 +40,6 @@ void main() {
             result: 0.0,
             hasError: false,
             onTapHeader: () {},
-            onBackspace: () {},
           ),
         ),
       );
@@ -56,7 +55,6 @@ void main() {
             result: null,
             hasError: false,
             onTapHeader: () {},
-            onBackspace: () {},
           ),
         ),
       );
@@ -76,7 +74,6 @@ void main() {
             hasError: true,
             errorLabel: '오류',
             onTapHeader: () {},
-            onBackspace: () {},
           ),
         ),
       );
@@ -96,7 +93,6 @@ void main() {
               result: 12345678.0,
               hasError: false,
               onTapHeader: () {},
-              onBackspace: () {},
             ),
           ),
         ),
@@ -104,31 +100,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('backspace icon is tappable separately from header', (
-      tester,
-    ) async {
-      var headerTaps = 0;
-      var bsTaps = 0;
-      await tester.pumpWidget(
-        wrap(
-          ExpressionDisplay(
-            currency: krw,
-            expression: '5',
-            result: 5.0,
-            hasError: false,
-            onTapHeader: () => headerTaps++,
-            onBackspace: () => bsTaps++,
-          ),
-        ),
-      );
-      await tester.tap(find.byIcon(Icons.backspace_outlined));
-      expect(bsTaps, 1);
-      expect(headerTaps, 0);
-
-      await tester.tap(find.text('KRW'));
-      expect(headerTaps, 1);
-      expect(bsTaps, 1);
-    });
+    // Note: backspace icon previously lived in ExpressionDisplay; it has
+    // since moved into the calculator keypad (better one-hand reach), so
+    // the per-widget icon separation test was removed.
   });
 
   group('ConvertedDisplay — edge cases', () {

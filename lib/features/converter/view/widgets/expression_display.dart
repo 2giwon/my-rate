@@ -11,7 +11,6 @@ class ExpressionDisplay extends StatelessWidget {
     required this.result,
     required this.hasError,
     required this.onTapHeader,
-    required this.onBackspace,
     this.errorLabel = 'Error',
   });
 
@@ -20,7 +19,6 @@ class ExpressionDisplay extends StatelessWidget {
   final double? result;
   final bool hasError;
   final VoidCallback onTapHeader;
-  final VoidCallback onBackspace;
   final String errorLabel;
 
   @override
@@ -67,30 +65,13 @@ class ExpressionDisplay extends StatelessWidget {
                 ),
               ),
             ),
-            Row(
-              children: [
-                Expanded(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      expression.isEmpty ? '0' : expression,
-                      style: const TextStyle(fontSize: 14, color: Colors.grey),
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.backspace_outlined),
-                  onPressed: onBackspace,
-                  iconSize: 18,
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 32,
-                    minHeight: 32,
-                  ),
-                ),
-              ],
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Text(
+                expression.isEmpty ? '0' : expression,
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
+              ),
             ),
             FittedBox(
               fit: BoxFit.scaleDown,

@@ -9,7 +9,12 @@ import '../logic/tip_calculator.dart';
 part 'tip_tax_notifier.g.dart';
 
 class TipTaxState {
-  TipTaxState({required this.mode, required this.tip, required this.tax, required this.discount});
+  TipTaxState({
+    required this.mode,
+    required this.tip,
+    required this.tax,
+    required this.discount,
+  });
 
   factory TipTaxState.initial() => TipTaxState(
     mode: TipTaxMode.none,
@@ -23,13 +28,17 @@ class TipTaxState {
   final TaxState tax;
   final DiscountState discount;
 
-  TipTaxState copyWith({TipTaxMode? mode, TipState? tip, TaxState? tax, DiscountState? discount}) =>
-      TipTaxState(
-        mode: mode ?? this.mode,
-        tip: tip ?? this.tip,
-        tax: tax ?? this.tax,
-        discount: discount ?? this.discount,
-      );
+  TipTaxState copyWith({
+    TipTaxMode? mode,
+    TipState? tip,
+    TaxState? tax,
+    DiscountState? discount,
+  }) => TipTaxState(
+    mode: mode ?? this.mode,
+    tip: tip ?? this.tip,
+    tax: tax ?? this.tax,
+    discount: discount ?? this.discount,
+  );
 }
 
 @riverpod
@@ -45,15 +54,31 @@ class TipTaxNotifier extends _$TipTaxNotifier {
     );
   }
 
-  void setTax({required double amount, required double vatPercent, required bool isInclusive}) {
+  void setTax({
+    required double amount,
+    required double vatPercent,
+    required bool isInclusive,
+  }) {
     state = state.copyWith(
-      tax: calculateTax(amount: amount, vatPercent: vatPercent, isInclusive: isInclusive),
+      tax: calculateTax(
+        amount: amount,
+        vatPercent: vatPercent,
+        isInclusive: isInclusive,
+      ),
     );
   }
 
-  void setDiscount({required double amount, required double value, required bool byPercent}) {
+  void setDiscount({
+    required double amount,
+    required double value,
+    required bool byPercent,
+  }) {
     state = state.copyWith(
-      discount: calculateDiscount(amount: amount, value: value, byPercent: byPercent),
+      discount: calculateDiscount(
+        amount: amount,
+        value: value,
+        byPercent: byPercent,
+      ),
     );
   }
 

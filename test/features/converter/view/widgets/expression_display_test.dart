@@ -21,7 +21,6 @@ void main() {
             result: 4100.0,
             hasError: false,
             onTapHeader: () {},
-            onBackspace: () {},
           ),
         ),
       ),
@@ -42,33 +41,12 @@ void main() {
             result: null,
             hasError: false,
             onTapHeader: () => tapped = true,
-            onBackspace: () {},
           ),
         ),
       ),
     );
     await tester.tap(find.text('KRW'));
     expect(tapped, isTrue);
-  });
-
-  testWidgets('tap backspace icon calls onBackspace', (tester) async {
-    var bs = false;
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: ExpressionDisplay(
-            currency: currency,
-            expression: '5',
-            result: 5.0,
-            hasError: false,
-            onTapHeader: () {},
-            onBackspace: () => bs = true,
-          ),
-        ),
-      ),
-    );
-    await tester.tap(find.byIcon(Icons.backspace_outlined));
-    expect(bs, isTrue);
   });
 
   testWidgets('hasError shows error label instead of result', (tester) async {
@@ -81,7 +59,6 @@ void main() {
             result: null,
             hasError: true,
             onTapHeader: () {},
-            onBackspace: () {},
           ),
         ),
       ),

@@ -191,8 +191,14 @@ CalculatorState _appendPercent(CalculatorState s) {
 
 CalculatorState _backspace(CalculatorState s) {
   if (s.expression.isEmpty) return s;
+  // After =, ⌫ peels one digit off the result (so the initial 100,000
+  // default and the result of any evaluation can both be edited).
   if (s.justEvaluated) {
-    return s.copyWith(justEvaluated: false, result: null);
+    final digitsOnly = s.expression.replaceAll(RegExp(r'[^0-9.]'), '');
+    if (digitsOnly.isEmpty) return CalculatorState.initial();
+    final trimmed = digitsOnly.substring(0, digitsOnly.length - 1);
+    if (trimmed.isEmpty || trimmed == '.') return CalculatorState.initial();
+    return _withDisplay(CalculatorState.initial(), _formatNumber(trimmed));
   }
   var newDisplay = s.expression.trimRight();
   if (newDisplay.isEmpty) return _withDisplay(s, '');

@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/l10n/generated/app_localizations.dart';
 import '../../../core/routing/app_router.dart';
 import '../../../data/exchange_rate/providers.dart';
-import '../../../domain/calculator/models.dart';
 import '../../../domain/exchange_rate/models.dart';
 import '../../calculator/providers/calculator_notifier.dart';
 import '../../calculator/view/widgets/calculator_keypad.dart';
@@ -57,7 +56,9 @@ class ConverterScreen extends ConsumerWidget {
           data: (s) {
             final snap = s.snapshot;
             if (snap == null) return Text(l10n.appTitle);
-            final result = s.result;
+            // Use a stable nominal amount (1.0) so directRate label
+            // doesn't recompute per keystroke.
+            final result = s.convertFor(1.0);
             final toDecimals = catalogAsync.maybeWhen(
               data: (catalog) {
                 final lang = Localizations.localeOf(context).languageCode;
@@ -102,7 +103,11 @@ class ConverterScreen extends ConsumerWidget {
                   s.toCode,
                   languageCode: lang,
                 );
-                final convertedAmount = s.result?.convertedAmount;
+                // Amount comes from CalculatorNotifier directly, so changing
+                // the calculator does not rebuild the async ConverterNotifier
+                // (no full-screen loading flicker).
+                final amount = calcState.result ?? 0;
+                final convertedAmount = s.convertFor(amount)?.convertedAmount;
                 return Column(
                   children: [
                     if (s.isStale)
@@ -114,7 +119,7 @@ class ConverterScreen extends ConsumerWidget {
                     ExpressionDisplay(
                       currency: fromCurrency,
                       expression: calcState.expression,
-                      result: s.amount,
+                      result: amount,
                       hasError: calcState.hasError,
                       errorLabel: l10n.calcError,
                       onTapHeader: () => _openPicker(
@@ -123,9 +128,6 @@ class ConverterScreen extends ConsumerWidget {
                         isFrom: true,
                         snapshot: snap,
                       ),
-                      onBackspace: () => ref
-                          .read(calculatorNotifierProvider.notifier)
-                          .onKey(const BackspaceKey()),
                     ),
                     Center(
                       child: IconButton(

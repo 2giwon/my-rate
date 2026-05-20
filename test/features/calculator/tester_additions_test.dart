@@ -79,11 +79,21 @@ void main() {
       expect(s.justEvaluated, isTrue);
     });
 
-    test('⌫ after = → discards result; expression preserved', () {
-      final s = _run(const [DigitKey(5), EqualsKey(), BackspaceKey()]);
-      expect(s.expression, '5');
-      expect(s.result, isNull);
-      expect(s.justEvaluated, isFalse);
+    // UX update (post-Round 1): when the field already shows a result
+    // (e.g. initial 100,000 or after pressing =), ⌫ peels one digit off
+    // the result. This matches users' intuition over the original
+    // spec §4.5 "discard result" rule, which made ⌫ feel broken on the
+    // initial default value.
+    test('⌫ after = → peels last digit off result', () {
+      final s = _run(const [
+        DigitKey(1),
+        DigitKey(2),
+        DigitKey(3),
+        EqualsKey(),
+        BackspaceKey(),
+      ]);
+      expect(s.expression, '12');
+      expect(s.result, 12.0);
     });
 
     test('digit after = → starts new expression', () {
@@ -516,55 +526,47 @@ void main() {
       ).thenAnswer((_) async => snap());
     });
 
-    test('Clear key reverts amount to defaultAmount (100,000)', () async {
+    // Post-Round 1 refactor: ConverterNotifier no longer watches
+    // CalculatorNotifier (that caused full-screen loading flicker on every
+    // keypress). The displayed amount is now computed in the UI layer as
+    // `calc.result ?? 0`. These tests therefore verify the calculator side
+    // of the contract (UI integration is covered by the e2e tests).
+
+    test('Clear key resets calc.result to null (UI shows 0)', () async {
       final c = make();
       addTearDown(c.dispose);
-      await c.read(converterNotifierProvider.future);
 
       final n = c.read(calculatorNotifierProvider.notifier);
-      // First put something in calculator.
       n.onKey(const DigitKey(5));
       n.onKey(const DigitKey(0));
-      await c.read(converterNotifierProvider.future);
-      expect(c.read(converterNotifierProvider).valueOrNull?.amount, 50.0);
+      expect(c.read(calculatorNotifierProvider).result, 50.0);
 
-      // Clear.
       n.onKey(const ClearKey());
-      await c.read(converterNotifierProvider.future);
-      expect(c.read(converterNotifierProvider).valueOrNull?.amount, 100000.0);
+      expect(c.read(calculatorNotifierProvider).result, isNull);
+      expect(c.read(calculatorNotifierProvider).expression, '');
     });
 
-    test(
-      'Error state (5÷0=) reverts amount to defaultAmount (calc.result null)',
-      () async {
-        final c = make();
-        addTearDown(c.dispose);
-        await c.read(converterNotifierProvider.future);
+    test('Error state (5÷0=) sets hasError and result null', () async {
+      final c = make();
+      addTearDown(c.dispose);
 
-        final n = c.read(calculatorNotifierProvider.notifier);
-        n.onKey(const DigitKey(5));
-        n.onKey(const OpKey(Operator.div));
-        n.onKey(const DigitKey(0));
-        n.onKey(const EqualsKey());
-        await c.read(converterNotifierProvider.future);
-        expect(c.read(calculatorNotifierProvider).hasError, isTrue);
-        expect(c.read(converterNotifierProvider).valueOrNull?.amount, 100000.0);
-      },
-    );
+      final n = c.read(calculatorNotifierProvider.notifier);
+      n.onKey(const DigitKey(5));
+      n.onKey(const OpKey(Operator.div));
+      n.onKey(const DigitKey(0));
+      n.onKey(const EqualsKey());
+      expect(c.read(calculatorNotifierProvider).hasError, isTrue);
+      expect(c.read(calculatorNotifierProvider).result, isNull);
+    });
 
-    test(
-      'setExpression (e.g. tip-panel Apply) updates converter amount',
-      () async {
-        final c = make();
-        addTearDown(c.dispose);
-        await c.read(converterNotifierProvider.future);
+    test('setExpression (tip-panel Apply) updates calc result', () async {
+      final c = make();
+      addTearDown(c.dispose);
 
-        c.read(calculatorNotifierProvider.notifier).setExpression(4715);
-        await c.read(converterNotifierProvider.future);
-        expect(c.read(converterNotifierProvider).valueOrNull?.amount, 4715.0);
-        expect(c.read(calculatorNotifierProvider).expression, '4,715');
-      },
-    );
+      c.read(calculatorNotifierProvider.notifier).setExpression(4715);
+      expect(c.read(calculatorNotifierProvider).result, 4715.0);
+      expect(c.read(calculatorNotifierProvider).expression, '4,715');
+    });
 
     test('setExpression after an error state clears hasError', () {
       final c = ProviderContainer();

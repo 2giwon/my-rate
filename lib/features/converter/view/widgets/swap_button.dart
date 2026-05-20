@@ -6,6 +6,9 @@ class SwapButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton.filledTonal(onPressed: onPressed, icon: const Icon(Icons.swap_vert));
+    return IconButton.filledTonal(
+      onPressed: onPressed,
+      icon: const Icon(Icons.swap_vert),
+    );
   }
 }

@@ -14,7 +14,10 @@ class CurrencyCell extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            Text(currency.flagEmoji ?? '💱', style: const TextStyle(fontSize: 22)),
+            Text(
+              currency.flagEmoji ?? '💱',
+              style: const TextStyle(fontSize: 22),
+            ),
             const SizedBox(width: 12),
             Text(currency.code, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(width: 8),

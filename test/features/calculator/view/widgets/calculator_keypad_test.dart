@@ -13,28 +13,29 @@ void main() {
     );
   }
 
-  testWidgets('renders all 20 keys', (tester) async {
+  testWidgets('renders all 21 keys (incl. ⌫, full-width =)', (tester) async {
     await pump(tester);
     for (final label in const [
       'C',
+      '⌫',
       '(',
       ')',
-      '÷',
       '7',
       '8',
       '9',
-      '×',
+      '÷',
       '4',
       '5',
       '6',
-      '−',
+      '×',
       '1',
       '2',
       '3',
-      '+',
+      '−',
       '%',
       '0',
       '.',
+      '+',
       '=',
     ]) {
       expect(find.text(label), findsOneWidget, reason: 'key "$label" missing');

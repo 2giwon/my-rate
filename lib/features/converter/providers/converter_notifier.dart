@@ -5,7 +5,6 @@ import '../../../core/constants/defaults.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../data/exchange_rate/providers.dart';
 import '../../../domain/exchange_rate/models.dart';
-import '../../calculator/providers/calculator_notifier.dart';
 import '../logic/conversion.dart';
 
 part 'converter_notifier.g.dart';
@@ -56,17 +55,26 @@ class ConverterState {
     if (s.rateFor(fromCode) == null || s.rateFor(toCode) == null) return null;
     return convert(snap: s, fromCode: fromCode, toCode: toCode, amount: amount);
   }
+
+  /// Convert an externally-provided [amount] (typically the calculator
+  /// result) using the current snapshot. Returns null if the snapshot is
+  /// missing either currency.
+  ConversionResult? convertFor(double amount) {
+    final s = snapshot;
+    if (s == null) return null;
+    if (s.rateFor(fromCode) == null || s.rateFor(toCode) == null) return null;
+    return convert(snap: s, fromCode: fromCode, toCode: toCode, amount: amount);
+  }
 }
 
 @riverpod
 class ConverterNotifier extends _$ConverterNotifier {
   @override
   Future<ConverterState> build() async {
-    // Subscribe to calculator result; default to AppDefaults.defaultAmount
-    // when calculator is empty.
-    final calcResult = ref.watch(calculatorNotifierProvider).result;
-    final amount = calcResult ?? AppDefaults.defaultAmount;
-
+    // ConverterState carries snapshot/from/to only; the displayed `amount`
+    // is owned by CalculatorNotifier and read by the UI directly. This
+    // avoids re-running build() on every keypress (which caused a
+    // full-screen loading flicker).
     final settings = await ref.watch(settingsStoreProvider.future);
     final from = await settings.defaultFrom();
     final to = await settings.defaultTo();
@@ -77,14 +85,14 @@ class ConverterNotifier extends _$ConverterNotifier {
       return ConverterState(
         fromCode: from,
         toCode: to,
-        amount: amount,
+        amount: AppDefaults.defaultAmount,
         snapshot: snap,
       );
     } on NetworkException catch (e) {
       return ConverterState(
         fromCode: from,
         toCode: to,
-        amount: amount,
+        amount: AppDefaults.defaultAmount,
         error: e,
         isStale: e.hasCache,
       );

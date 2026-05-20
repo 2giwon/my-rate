@@ -13,7 +13,12 @@ void main() {
 
   group('convert', () {
     test('same currency returns input amount and rate 1.0', () {
-      final r = convert(snap: snap, fromCode: 'USD', toCode: 'USD', amount: 100);
+      final r = convert(
+        snap: snap,
+        fromCode: 'USD',
+        toCode: 'USD',
+        amount: 100,
+      );
       expect(r.convertedAmount, 100);
       expect(r.directRate, 1.0);
     });
@@ -25,13 +30,23 @@ void main() {
     });
 
     test('KRW to USD inverts the rate', () {
-      final r = convert(snap: snap, fromCode: 'KRW', toCode: 'USD', amount: 100000);
+      final r = convert(
+        snap: snap,
+        fromCode: 'KRW',
+        toCode: 'USD',
+        amount: 100000,
+      );
       expect(r.convertedAmount, closeTo(100000 / 1362.5, 1e-6));
       expect(r.directRate, closeTo(1 / 1362.5, 1e-9));
     });
 
     test('cross rate JPY to EUR via USD base', () {
-      final r = convert(snap: snap, fromCode: 'JPY', toCode: 'EUR', amount: 100);
+      final r = convert(
+        snap: snap,
+        fromCode: 'JPY',
+        toCode: 'EUR',
+        amount: 100,
+      );
       const expected = 100 * (1 / 156.2) * 0.92;
       expect(r.convertedAmount, closeTo(expected, 1e-9));
     });

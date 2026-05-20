@@ -97,23 +97,23 @@ void main() {
     verify(() => repo.getLatest(baseCode: 'KRW', forceRefresh: true)).called(1);
   });
 
-  group('calculator sync', () {
-    test(
-      'amount auto-updates when CalculatorNotifier.result changes',
-      () async {
-        final c = makeContainer();
-        addTearDown(c.dispose);
-        await c.read(converterNotifierProvider.future);
+  group('calculator decoupling', () {
+    test('ConverterNotifier no longer rebuilds on calculator changes '
+        '(amount is read in the UI layer instead)', () async {
+      final c = makeContainer();
+      addTearDown(c.dispose);
+      await c.read(converterNotifierProvider.future);
 
-        c.read(calculatorNotifierProvider.notifier).onKey(const DigitKey(1));
-        c.read(calculatorNotifierProvider.notifier).onKey(const DigitKey(2));
-        c.read(calculatorNotifierProvider.notifier).onKey(const DigitKey(3));
+      // Push several keys.
+      c.read(calculatorNotifierProvider.notifier).onKey(const DigitKey(1));
+      c.read(calculatorNotifierProvider.notifier).onKey(const DigitKey(2));
+      c.read(calculatorNotifierProvider.notifier).onKey(const DigitKey(3));
 
-        // Wait for ref.watch propagation through async ConverterNotifier.build.
-        await c.read(converterNotifierProvider.future);
-
-        expect(c.read(converterNotifierProvider).valueOrNull?.amount, 123.0);
-      },
-    );
+      // ConverterNotifier should still hold the default amount —
+      // it does not watch the calculator (avoids loading flicker).
+      expect(c.read(converterNotifierProvider).valueOrNull?.amount, 100000);
+      // The calculator side owns the current amount.
+      expect(c.read(calculatorNotifierProvider).result, 123.0);
+    });
   });
 }
