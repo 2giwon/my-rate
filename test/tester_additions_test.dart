@@ -98,8 +98,9 @@ void main() {
   });
 
   // ───────────────────────────────────────────────────────────────────
-  // 2) Spec 8.1 / 8.2: time_next_update_unix 파싱 정확성
-  //    repository_impl이 unix 초 → DateTime(UTC, ms) 변환을 올바로 수행해야
+  // 2) Spec 8.1 / 8.2: OXR timestamp 파싱 + next-update 합성 정확성
+  //    repository_impl이 unix 초 → DateTime(UTC, ms) 변환을 올바로 수행하고,
+  //    OXR가 주지 않는 다음 갱신 시각을 시간당 TTL로 합성해야
   //    캐시 만료 판단(spec 9.2)이 의미를 갖는다.
   // ───────────────────────────────────────────────────────────────────
   group('Repository — DTO parsing (spec 8.1)', () {
@@ -135,18 +136,16 @@ void main() {
       );
     });
 
-    test('time_next_update_unix → apiNextUpdateAt 변환 (UTC ms)', () async {
+    test('timestamp → apiUpdatedAt 변환 + apiNextUpdateAt 합성 (UTC ms)', () async {
       // 2024-05-12 00:00:00 UTC == 1715472000
-      // 2024-05-13 00:00:00 UTC == 1715558400
+      // OXR는 next-update 필드가 없으므로 repository가 시간당 TTL로 합성한다.
       when(() => cache.read('USD')).thenAnswer((_) async => null);
       when(() => cache.save(any())).thenAnswer((_) async {});
       when(() => api.fetchLatest('USD')).thenAnswer(
         (_) async => LatestRatesDto(
-          result: 'success',
-          baseCode: 'USD',
-          timeLastUpdateUnix: 1715472000,
-          timeNextUpdateUnix: 1715558400,
-          conversionRates: const {'KRW': 1362.5},
+          base: 'USD',
+          timestamp: 1715472000,
+          rates: const {'KRW': 1362.5},
         ),
       );
 
@@ -155,12 +154,11 @@ void main() {
         snap.apiUpdatedAt,
         DateTime.fromMillisecondsSinceEpoch(1715472000 * 1000, isUtc: true),
       );
+      // 다음 갱신 시각 = 마지막 갱신 + 1시간 (OXR 무료 플랜 갱신 주기)
       expect(
-        snap.apiNextUpdateAt,
-        DateTime.fromMillisecondsSinceEpoch(1715558400 * 1000, isUtc: true),
+        snap.apiNextUpdateAt.difference(snap.apiUpdatedAt),
+        const Duration(hours: 1),
       );
-      // 두 값의 차이는 정확히 24시간이어야 한다 (API 갱신 주기)
-      expect(snap.apiNextUpdateAt.difference(snap.apiUpdatedAt), const Duration(hours: 24));
     });
 
     test('ApiException + 캐시 없음 → 그대로 전파 (spec § 10)', () async {
@@ -170,7 +168,10 @@ void main() {
         () => api.fetchLatest('USD'),
       ).thenThrow(const ApiException('Server Error', statusCode: 500));
 
-      await expectLater(repo.getLatest(baseCode: 'USD'), throwsA(isA<ApiException>()));
+      await expectLater(
+        repo.getLatest(baseCode: 'USD'),
+        throwsA(isA<ApiException>()),
+      );
     });
 
     test('ApiException + 캐시 있음 → 캐시 fallback (spec § 10)', () async {
@@ -204,16 +205,26 @@ void main() {
         apiNextUpdateAt: DateTime.utc(2026, 5, 2),
       );
       when(() => cache.read('USD')).thenAnswer((_) async => cached);
-      when(() => api.fetchLatest('USD')).thenThrow(const InvalidApiKeyException('invalid-key'));
+      when(
+        () => api.fetchLatest('USD'),
+      ).thenThrow(const InvalidApiKeyException('invalid-key'));
 
-      await expectLater(repo.getLatest(baseCode: 'USD'), throwsA(isA<InvalidApiKeyException>()));
+      await expectLater(
+        repo.getLatest(baseCode: 'USD'),
+        throwsA(isA<InvalidApiKeyException>()),
+      );
     });
 
     test('InvalidApiKeyException + 캐시 없음 → 그대로 전파', () async {
       when(() => cache.read('USD')).thenAnswer((_) async => null);
-      when(() => api.fetchLatest('USD')).thenThrow(const InvalidApiKeyException('invalid-key'));
+      when(
+        () => api.fetchLatest('USD'),
+      ).thenThrow(const InvalidApiKeyException('invalid-key'));
 
-      await expectLater(repo.getLatest(baseCode: 'USD'), throwsA(isA<InvalidApiKeyException>()));
+      await expectLater(
+        repo.getLatest(baseCode: 'USD'),
+        throwsA(isA<InvalidApiKeyException>()),
+      );
     });
 
     test('연속 호출 시 캐시 유효하면 API는 1번도 호출되지 않는다 (월 1500건 보호)', () async {
@@ -237,24 +248,23 @@ void main() {
   });
 
   // ───────────────────────────────────────────────────────────────────
-  // 3) Spec 10: API error-type 변종 — 'inactive-account'와 일반 에러
+  // 3) Spec 10: OXR 에러 변종 — 제한된 계정과 일반 에러
   // ───────────────────────────────────────────────────────────────────
-  group('ExchangeRateApi — error-type 변종 (spec 10)', () {
+  group('ExchangeRateApi — OXR 에러 변종 (spec 10)', () {
     setUpAll(() {
       registerFallbackValue(RequestOptions(path: ''));
     });
 
-    test('inactive-account → InvalidApiKeyException', () async {
-      // spec 10: '잘못된 API 키' 카테고리에 inactive-account도 포함된다.
-      // Developer 테스트는 invalid-key만 검증했음.
+    test('403 access_restricted → InvalidApiKeyException', () async {
+      // spec 10: '잘못된 API 키' 카테고리에 비활성/제한된 계정(access_restricted)도 포함된다.
       final dio = Dio();
       final adapter = _FakeAdapter();
       dio.httpClientAdapter = adapter;
 
       when(() => adapter.fetch(any(), any(), any())).thenAnswer((_) async {
         return ResponseBody.fromString(
-          '{"result":"error","error-type":"inactive-account"}',
-          200,
+          '{"error":true,"status":403,"message":"access_restricted","description":"disabled"}',
+          403,
           headers: {
             Headers.contentTypeHeader: ['application/json'],
           },
@@ -262,19 +272,22 @@ void main() {
       });
 
       final api = ExchangeRateApi(dio: dio, apiKey: 'inactive');
-      expect(() => api.fetchLatest('USD'), throwsA(isA<InvalidApiKeyException>()));
+      expect(
+        () => api.fetchLatest('USD'),
+        throwsA(isA<InvalidApiKeyException>()),
+      );
     });
 
-    test('result=error + unsupported-code → ApiException (not InvalidApiKeyException)', () async {
-      // spec 10: 일반 API 에러는 ApiException으로 분류.
+    test('429 over usage → ApiException (not InvalidApiKeyException)', () async {
+      // spec 10: 쿼터 초과 등 일반 API 에러는 ApiException으로 분류 (캐시 fallback 대상).
       final dio = Dio();
       final adapter = _FakeAdapter();
       dio.httpClientAdapter = adapter;
 
       when(() => adapter.fetch(any(), any(), any())).thenAnswer((_) async {
         return ResponseBody.fromString(
-          '{"result":"error","error-type":"unsupported-code"}',
-          200,
+          '{"error":true,"status":429,"message":"not_allowed","description":"over usage"}',
+          429,
           headers: {
             Headers.contentTypeHeader: ['application/json'],
           },
@@ -285,7 +298,9 @@ void main() {
       // ApiException이지만 InvalidApiKeyException은 아니어야 함
       expect(
         () => api.fetchLatest('USD'),
-        throwsA(allOf(isA<ApiException>(), isNot(isA<InvalidApiKeyException>()))),
+        throwsA(
+          allOf(isA<ApiException>(), isNot(isA<InvalidApiKeyException>())),
+        ),
       );
     });
 
@@ -302,7 +317,9 @@ void main() {
       final api = ExchangeRateApi(dio: dio, apiKey: 'k');
       expect(
         () => api.fetchLatest('USD'),
-        throwsA(isA<ApiException>().having((e) => e.statusCode, 'statusCode', 404)),
+        throwsA(
+          isA<ApiException>().having((e) => e.statusCode, 'statusCode', 404),
+        ),
       );
     });
   });
@@ -386,7 +403,12 @@ void main() {
     test('매우 큰 수 (1조원) 도 안전하게 변환', () {
       // KRW 1조원 → USD 환산 — overflow 없이 정상 처리되어야 함.
       final big = 1000000000000.0; // 1조
-      final r = convert(snap: snap, fromCode: 'KRW', toCode: 'USD', amount: big);
+      final r = convert(
+        snap: snap,
+        fromCode: 'KRW',
+        toCode: 'USD',
+        amount: big,
+      );
       expect(r.convertedAmount, closeTo(big / 1362.5, 1e-3));
       expect(r.convertedAmount.isFinite, isTrue);
     });
@@ -421,7 +443,9 @@ void main() {
 
     setUp(() {
       repo = _MockRepo();
-      when(() => repo.getFavoriteCodes()).thenAnswer((_) async => ['KRW', 'USD']);
+      when(
+        () => repo.getFavoriteCodes(),
+      ).thenAnswer((_) async => ['KRW', 'USD']);
       when(() => repo.addFavorite(any())).thenAnswer((_) async {});
       when(() => repo.removeFavorite(any())).thenAnswer((_) async {});
     });

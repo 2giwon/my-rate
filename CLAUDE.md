@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-MyRate — Flutter mobile app (Android/iOS): an ad-free currency converter built on the ExchangeRate-API. Korean/English with system-following dark mode. No analytics, no tracking SDKs (this is a core product differentiator — do not add Firebase Analytics, AdMob, Crashlytics, etc.).
+MyRate — Flutter mobile app (Android/iOS): an ad-free currency converter built on Open Exchange Rates (free plan: USD base, hourly updates). Korean/English with system-following dark mode. No analytics, no tracking SDKs (this is a core product differentiator — do not add Firebase Analytics, AdMob, Crashlytics, etc.).
 
 Dart package name is `myrate` (pubspec); folder name `my-rate` is dash-form only because Dart identifiers cannot contain dashes.
 
@@ -15,9 +15,9 @@ Dart package name is `myrate` (pubspec); folder name `my-rate` is dash-form only
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs   # freezed + riverpod codegen
 
-# Run dev build — API key MUST be injected at compile time
+# Run dev build — App ID MUST be injected at compile time
 ./scripts/run.sh                                            # reads .env, runs flutter run --dart-define-from-file=.env
-flutter run --dart-define=EXCHANGE_RATE_API_KEY=<key>       # equivalent inline
+flutter run --dart-define=OPEN_EXCHANGE_RATES_APP_ID=<id>   # equivalent inline
 
 # Codegen watch while iterating on @freezed / @Riverpod classes
 dart run build_runner watch --delete-conflicting-outputs
@@ -32,7 +32,7 @@ flutter test integration_test/app_test.dart                 # widget-level integ
 flutter analyze                                             # strict-casts / strict-inference / strict-raw-types enabled
 ```
 
-`.env` is gitignored. Copy `.env.example` and fill in `EXCHANGE_RATE_API_KEY` (free plan: 1500 req/month at https://www.exchangerate-api.com/sign-up).
+`.env` is gitignored. Copy `.env.example` and fill in `OPEN_EXCHANGE_RATES_APP_ID` (free plan: 1,000 req/month, hourly updates, USD base — sign up at https://openexchangerates.org/signup/free).
 
 ## Architecture
 
@@ -40,8 +40,8 @@ flutter analyze                                             # strict-casts / str
 
 ```
 domain/       Pure-Dart models (freezed) + repository interfaces. No Flutter/IO deps.
-data/         Repository impls; remote (Dio + ExchangeRate-API), local (SharedPreferences stores);
-              DTOs (json_serializable); Riverpod providers wiring it all up.
+data/         Repository impls; remote (Dio + Open Exchange Rates), local (SharedPreferences stores);
+              DTOs (hand-written fromJson); Riverpod providers wiring it all up.
 features/     UI + feature-local notifiers, grouped by screen (converter, currency_picker, settings).
 core/         Routing (go_router), theme, generated l10n, AppException hierarchy, utils, constants.
 ```
@@ -58,7 +58,7 @@ All providers/notifiers use `@Riverpod` / `@riverpod` from `riverpod_annotation`
 
 ### API key injection
 
-The ExchangeRate-API key is read via `String.fromEnvironment('EXCHANGE_RATE_API_KEY')` in `lib/data/exchange_rate/providers.dart`. This is a **compile-time** constant — you cannot read it from a runtime `.env` loader. Always use `--dart-define` or `--dart-define-from-file=.env`. The repo's `scripts/run.sh` enforces the .env path.
+The Open Exchange Rates App ID is read via `String.fromEnvironment('OPEN_EXCHANGE_RATES_APP_ID')` in `lib/data/exchange_rate/providers.dart`. This is a **compile-time** constant — you cannot read it from a runtime `.env` loader. Always use `--dart-define` or `--dart-define-from-file=.env`. The repo's `scripts/run.sh` enforces the .env path.
 
 ### Repository fallback semantics (important)
 
@@ -68,10 +68,12 @@ The ExchangeRate-API key is read via `String.fromEnvironment('EXCHANGE_RATE_API_
 2. API call succeeds → save + return new snapshot.
 3. `NetworkException` (timeouts, connection errors) + cache exists → return cached snapshot (caller surfaces `isStale=true`).
 4. `NetworkException` + no cache → rethrow with `hasCache: false`.
-5. `ApiException` (HTTP 4xx/5xx) + cache exists → return cached.
-6. `InvalidApiKeyException` → **always rethrow**, never fall back to cache (it's a developer/config error, not a transient failure).
+5. `ApiException` (HTTP 4xx/5xx, e.g. 429 quota) + cache exists → return cached.
+6. `InvalidApiKeyException` (OXR 401 `invalid_app_id`/`missing_app_id`, or 403 `access_restricted`) → **always rethrow**, never fall back to cache (it's a developer/config error, not a transient failure).
 
-`ExchangeRateSnapshot.isStaleAt(now)` is `now.isAfter(apiNextUpdateAt)`. Cross-rate conversion (non-USD base → non-USD target) is computed in `lib/features/converter/logic/conversion.dart` via `toRate / fromRate`.
+The OXR free plan serves **USD base only**, so the repo pins `baseCode = 'USD'` for both the API call and the cache key (the `baseCode` param on `getLatest`/`fetchLatest` is accepted but ignored). All non-USD pairs are derived from the USD map by `lib/features/converter/logic/conversion.dart` via `toRate / fromRate`.
+
+OXR's response has no next-update field, so `_fromDto` **synthesizes** `apiNextUpdateAt = apiUpdatedAt + 1h` (the free plan's hourly cadence); change `_refreshTtl` if the plan tier changes. `ExchangeRateSnapshot.isStaleAt(now)` is `now.isAfter(apiNextUpdateAt)`.
 
 ### Localization
 
@@ -81,7 +83,7 @@ Locale resolution is overridden in two places (`lib/app.dart` and `AppSettings.f
 
 ### Currency catalog
 
-`assets/currencies.json` (declared in `pubspec.yaml`) is the source of truth for currency display names, flags, decimal places, and short labels. Loaded once via `CurrencyCatalog.load()` and cached in the `currencyCatalog` provider. The ExchangeRate-API returns ~161 currency codes; codes not in the catalog fall back to a default `Currency(code, code, '', 2, code)` shape.
+`assets/currencies.json` (declared in `pubspec.yaml`) is the source of truth for currency display names, flags, decimal places, and short labels. Loaded once via `CurrencyCatalog.load()` and cached in the `currencyCatalog` provider. Open Exchange Rates returns ~170 currency codes; codes not in the catalog fall back to a default `Currency(code, code, '', 2, code)` shape.
 
 ### Persistence keys
 

@@ -34,7 +34,7 @@ Dio dio(DioRef ref) {
   );
 }
 
-const String _kApiKeyDefine = 'EXCHANGE_RATE_API_KEY';
+const String _kApiKeyDefine = 'OPEN_EXCHANGE_RATES_APP_ID';
 const String _kApiKey = String.fromEnvironment(_kApiKeyDefine);
 
 @Riverpod(keepAlive: true)
@@ -43,7 +43,9 @@ ExchangeRateApi exchangeRateApi(ExchangeRateApiRef ref) {
 }
 
 @Riverpod(keepAlive: true)
-Future<ExchangeRateRepository> exchangeRateRepository(ExchangeRateRepositoryRef ref) async {
+Future<ExchangeRateRepository> exchangeRateRepository(
+  ExchangeRateRepositoryRef ref,
+) async {
   final prefs = await ref.watch(sharedPreferencesProvider.future);
   final catalog = await ref.watch(currencyCatalogProvider.future);
   return ExchangeRateRepositoryImpl(

@@ -11,7 +11,7 @@ void main() {
     registerFallbackValue(RequestOptions(path: ''));
   });
 
-  group('ExchangeRateApi', () {
+  group('ExchangeRateApi (Open Exchange Rates)', () {
     test('returns LatestRatesDto on 200', () async {
       final dio = Dio();
       final adapter = _FakeAdapter();
@@ -19,8 +19,8 @@ void main() {
 
       when(() => adapter.fetch(any(), any(), any())).thenAnswer((_) async {
         return ResponseBody.fromString(
-          '{"result":"success","base_code":"USD","time_last_update_unix":1715472000,'
-          '"time_next_update_unix":1715558400,"conversion_rates":{"KRW":1362.5,"JPY":156.2}}',
+          '{"disclaimer":"x","license":"y","timestamp":1715472000,'
+          '"base":"USD","rates":{"KRW":1362.5,"JPY":156.2}}',
           200,
           headers: {
             Headers.contentTypeHeader: ['application/json'],
@@ -30,19 +30,20 @@ void main() {
 
       final api = ExchangeRateApi(dio: dio, apiKey: 'test-key');
       final dto = await api.fetchLatest('USD');
-      expect(dto.baseCode, 'USD');
-      expect(dto.conversionRates['KRW'], 1362.5);
+      expect(dto.base, 'USD');
+      expect(dto.timestamp, 1715472000);
+      expect(dto.rates['KRW'], 1362.5);
     });
 
-    test('throws InvalidApiKeyException on result invalid-key', () async {
+    test('throws InvalidApiKeyException on 401 invalid_app_id', () async {
       final dio = Dio();
       final adapter = _FakeAdapter();
       dio.httpClientAdapter = adapter;
 
       when(() => adapter.fetch(any(), any(), any())).thenAnswer((_) async {
         return ResponseBody.fromString(
-          '{"result":"error","error-type":"invalid-key"}',
-          200,
+          '{"error":true,"status":401,"message":"invalid_app_id","description":"bad key"}',
+          401,
           headers: {
             Headers.contentTypeHeader: ['application/json'],
           },
@@ -50,7 +51,10 @@ void main() {
       });
 
       final api = ExchangeRateApi(dio: dio, apiKey: 'bad');
-      expect(() => api.fetchLatest('USD'), throwsA(isA<InvalidApiKeyException>()));
+      expect(
+        () => api.fetchLatest('USD'),
+        throwsA(isA<InvalidApiKeyException>()),
+      );
     });
 
     test('throws ApiException on HTTP 500', () async {
@@ -66,20 +70,23 @@ void main() {
       expect(() => api.fetchLatest('USD'), throwsA(isA<ApiException>()));
     });
 
-    test('throws NetworkException on DioException connection failure', () async {
-      final dio = Dio();
-      final adapter = _FakeAdapter();
-      dio.httpClientAdapter = adapter;
+    test(
+      'throws NetworkException on DioException connection failure',
+      () async {
+        final dio = Dio();
+        final adapter = _FakeAdapter();
+        dio.httpClientAdapter = adapter;
 
-      when(() => adapter.fetch(any(), any(), any())).thenThrow(
-        DioException(
-          requestOptions: RequestOptions(path: ''),
-          type: DioExceptionType.connectionError,
-        ),
-      );
+        when(() => adapter.fetch(any(), any(), any())).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: ''),
+            type: DioExceptionType.connectionError,
+          ),
+        );
 
-      final api = ExchangeRateApi(dio: dio, apiKey: 'k');
-      expect(() => api.fetchLatest('USD'), throwsA(isA<NetworkException>()));
-    });
+        final api = ExchangeRateApi(dio: dio, apiKey: 'k');
+        expect(() => api.fetchLatest('USD'), throwsA(isA<NetworkException>()));
+      },
+    );
   });
 }

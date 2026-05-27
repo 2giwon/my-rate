@@ -73,11 +73,9 @@ void main() {
     ).thenAnswer((_) async => snap(nextUpdate: DateTime.utc(2026, 5, 1)));
     when(() => api.fetchLatest('USD')).thenAnswer(
       (_) async => LatestRatesDto(
-        result: 'success',
-        baseCode: 'USD',
-        timeLastUpdateUnix: 1715472000,
-        timeNextUpdateUnix: 1715558400,
-        conversionRates: const {'KRW': 1400.0},
+        base: 'USD',
+        timestamp: 1715472000,
+        rates: const {'KRW': 1400.0},
       ),
     );
     when(() => cache.save(any())).thenAnswer((_) async {});
@@ -91,11 +89,9 @@ void main() {
     when(() => cache.read('USD')).thenAnswer((_) async => snap());
     when(() => api.fetchLatest('USD')).thenAnswer(
       (_) async => LatestRatesDto(
-        result: 'success',
-        baseCode: 'USD',
-        timeLastUpdateUnix: 1715472000,
-        timeNextUpdateUnix: 1715558400,
-        conversionRates: const {'KRW': 1400.0},
+        base: 'USD',
+        timestamp: 1715472000,
+        rates: const {'KRW': 1400.0},
       ),
     );
     when(() => cache.save(any())).thenAnswer((_) async {});
@@ -109,7 +105,9 @@ void main() {
     when(
       () => cache.read('USD'),
     ).thenAnswer((_) async => snap(nextUpdate: DateTime.utc(2026, 5, 1)));
-    when(() => api.fetchLatest('USD')).thenThrow(const NetworkException('offline'));
+    when(
+      () => api.fetchLatest('USD'),
+    ).thenThrow(const NetworkException('offline'));
 
     final r = await repo.getLatest(baseCode: 'USD');
     expect(r.baseCode, 'USD');
@@ -117,8 +115,13 @@ void main() {
 
   test('network failure + no cache: rethrows', () async {
     when(() => cache.read('USD')).thenAnswer((_) async => null);
-    when(() => api.fetchLatest('USD')).thenThrow(const NetworkException('offline'));
+    when(
+      () => api.fetchLatest('USD'),
+    ).thenThrow(const NetworkException('offline'));
 
-    expect(() => repo.getLatest(baseCode: 'USD'), throwsA(isA<NetworkException>()));
+    expect(
+      () => repo.getLatest(baseCode: 'USD'),
+      throwsA(isA<NetworkException>()),
+    );
   });
 }

@@ -14,19 +14,9 @@ class _FakeApi extends ExchangeRateApi {
   @override
   Future<LatestRatesDto> fetchLatest(String baseCode) async {
     return LatestRatesDto(
-      result: 'success',
-      baseCode: baseCode,
-      timeLastUpdateUnix: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      timeNextUpdateUnix:
-          DateTime.now()
-              .add(const Duration(hours: 24))
-              .millisecondsSinceEpoch ~/
-          1000,
-      conversionRates: const {
-        'KRW': 1.0,
-        'USD': 1 / 1362.5,
-        'JPY': 156.2 / 1362.5,
-      },
+      base: baseCode,
+      timestamp: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      rates: const {'KRW': 1.0, 'USD': 1 / 1362.5, 'JPY': 156.2 / 1362.5},
     );
   }
 }

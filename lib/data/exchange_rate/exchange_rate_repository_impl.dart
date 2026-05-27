@@ -29,20 +29,27 @@ class ExchangeRateRepositoryImpl implements ExchangeRateRepository {
   final CurrencyCatalog _catalog;
   final Clock _clock;
 
+  /// OXR 무료 플랜은 USD base만 제공하므로 캐시/요청을 USD로 고정한다.
+  /// 교차환율은 conversion.dart가 rates 맵으로 직접 계산한다.
+  static const String _baseCurrency = 'USD';
+
+  /// OXR는 `time_next_update`를 주지 않으므로(시간당 갱신) 다음 갱신 시각을 합성한다.
+  static const Duration _refreshTtl = Duration(hours: 1);
+
   @override
   Future<ExchangeRateSnapshot> getLatest({
     required String baseCode,
     bool forceRefresh = false,
   }) async {
     final now = _clock().toUtc();
-    final cached = await _cache.read(baseCode);
+    final cached = await _cache.read(_baseCurrency);
 
     if (!forceRefresh && cached != null && !cached.isStaleAt(now)) {
       return cached;
     }
 
     try {
-      final dto = await _api.fetchLatest(baseCode);
+      final dto = await _api.fetchLatest(_baseCurrency);
       final snap = _fromDto(dto, fetchedAt: now);
       await _cache.save(snap);
       return snap;
@@ -59,16 +66,21 @@ class ExchangeRateRepositoryImpl implements ExchangeRateRepository {
     }
   }
 
-  ExchangeRateSnapshot _fromDto(LatestRatesDto dto, {required DateTime fetchedAt}) {
+  ExchangeRateSnapshot _fromDto(
+    LatestRatesDto dto, {
+    required DateTime fetchedAt,
+  }) {
+    final updatedAt = DateTime.fromMillisecondsSinceEpoch(
+      dto.timestamp * 1000,
+      isUtc: true,
+    );
     return ExchangeRateSnapshot(
-      baseCode: dto.baseCode,
-      rates: Map.unmodifiable(dto.conversionRates),
+      baseCode: dto.base,
+      rates: Map.unmodifiable(dto.rates),
       fetchedAt: fetchedAt,
-      apiUpdatedAt: DateTime.fromMillisecondsSinceEpoch(dto.timeLastUpdateUnix * 1000, isUtc: true),
-      apiNextUpdateAt: DateTime.fromMillisecondsSinceEpoch(
-        dto.timeNextUpdateUnix * 1000,
-        isUtc: true,
-      ),
+      apiUpdatedAt: updatedAt,
+      // OXR는 다음 갱신 시각을 제공하지 않으므로 시간당 TTL로 합성한다.
+      apiNextUpdateAt: updatedAt.add(_refreshTtl),
     );
   }
 
