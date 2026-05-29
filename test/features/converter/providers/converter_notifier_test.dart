@@ -88,6 +88,45 @@ void main() {
     ).called(greaterThanOrEqualTo(1));
   });
 
+  test('swap transfers converted amount to calculator (round-trip)', () async {
+    // 회귀 테스트: 계산 결과 46,621 KRW (기본 KRW→USD) 상태에서 swap →
+    // 새 from(USD)의 금액 = 46,621 KRW를 변환한 USD 값(≈ 34.22)이어야 함.
+    // (스냅샷 rates: KRW=1.0, USD=1/1362.5)
+    final c = makeContainer();
+    addTearDown(c.dispose);
+    await c.read(converterNotifierProvider.future);
+
+    c.read(calculatorNotifierProvider.notifier).setExpression(46621);
+    const expectedAfter = 46621 / 1362.5; // KRW → USD 환산값
+
+    await c.read(converterNotifierProvider.notifier).swap();
+
+    final state = c.read(converterNotifierProvider).valueOrNull!;
+    expect(state.fromCode, 'USD');
+    expect(state.toCode, 'KRW');
+    // 계산기에는 변환된 값이 들어가 있어야 함 — 이 단언이 round-trip 보장.
+    expect(
+      c.read(calculatorNotifierProvider).result,
+      closeTo(expectedAfter, 1e-9),
+    );
+  });
+
+  test('swap with null calculator result does not touch calculator', () async {
+    // 입력 전 swap(앱 시작 직후 등): 계산기 result는 null로 유지되어야 함.
+    // 빈 상태에서 0을 강제로 채워 넣지 않는다.
+    final c = makeContainer();
+    addTearDown(c.dispose);
+    await c.read(converterNotifierProvider.future);
+
+    expect(c.read(calculatorNotifierProvider).result, isNull);
+    await c.read(converterNotifierProvider.notifier).swap();
+
+    final state = c.read(converterNotifierProvider).valueOrNull!;
+    expect(state.fromCode, 'USD');
+    expect(state.toCode, 'KRW');
+    expect(c.read(calculatorNotifierProvider).result, isNull);
+  });
+
   test('refresh forces API call', () async {
     final c = makeContainer();
     addTearDown(c.dispose);

@@ -5,6 +5,7 @@ import '../../../core/constants/defaults.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../data/exchange_rate/providers.dart';
 import '../../../domain/exchange_rate/models.dart';
+import '../../calculator/providers/calculator_notifier.dart';
 import '../logic/conversion.dart';
 
 part 'converter_notifier.g.dart';
@@ -124,9 +125,26 @@ class ConverterNotifier extends _$ConverterNotifier {
   Future<void> swap() async {
     final s = state.valueOrNull;
     if (s == null) return;
+
+    // 변환된 값을 새 'from' 금액으로 이동시켜 round-trip 유지.
+    // 예: 46,621 USD → 70,069,620 KRW 표시 → swap → 70,069,620 KRW → 46,621 USD.
+    // swap 코드 변경 *전에* 계산해야 함 — 변경 후엔 from/to가 뒤집혀
+    // 잘못된 방향으로 변환됨. picker 변경(setFromCode/setToCode)은 substitution
+    // 의미라 round-trip을 적용하지 않는다.
+    double? newAmount;
+    if (s.snapshot != null) {
+      final current = ref.read(calculatorNotifierProvider).result;
+      if (current != null) {
+        newAmount = s.convertFor(current)?.convertedAmount;
+      }
+    }
+
     state = AsyncData(
       s.copyWith(fromCode: s.toCode, toCode: s.fromCode, loading: true),
     );
+    if (newAmount != null) {
+      ref.read(calculatorNotifierProvider.notifier).setExpression(newAmount);
+    }
     await _reloadSnapshot(base: s.toCode);
   }
 
